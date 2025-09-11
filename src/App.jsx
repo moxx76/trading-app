@@ -2,14 +2,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AuthPage } from './components/auth/AuthPage'
 import { Dashboard } from './components/Dashboard'
-import { AdminPanel } from './components/admin/AdminPanel'
+import { AdminPanel } from './components/admin/AdminPanel'  // ← IMPORTANTE
 import { UserProfile } from './components/UserProfile'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 
 function AppContent() {
   const { user, loading } = useAuth()
 
-  // Mostra loading durante l'inizializzazione
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -36,6 +35,7 @@ function AppContent() {
             </ProtectedRoute>
           } 
         />
+        {/* ⚠️ QUESTA ROUTE DEVE ESSERCI! */}
         <Route 
           path="/admin" 
           element={
@@ -52,7 +52,6 @@ function AppContent() {
             </ProtectedRoute>
           } 
         />
-        {/* Redirect per route non trovate */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
