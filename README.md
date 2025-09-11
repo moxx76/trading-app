@@ -1,6 +1,12 @@
-# Trading WebApp
+# OOPS Tech - Trading WebApp
 
-Una piattaforma web mobile-first per il trading collaborativo dove gli utenti possono votare BUY o SELL su domande di trading create dagli amministratori.
+**L'intelligenza artificiale che ridefinisce l'investimento**
+
+Una piattaforma web mobile-first per il trading collaborativo dove gli utenti possono votare BUY o SELL su domande di trading create dagli amministratori. Powered by OOPS Tech AI.
+
+## 🧠 Il futuro non si prevede. Si crea.
+
+Benvenuto nell'era dell'intelligenza finanziaria potenziata. Non è solo tecnologia - è una rivoluzione nel modo di pensare il trading. La nostra intelligenza artificiale non si limita ad analizzare il presente, plasma attivamente il domani degli investimenti.
 
 ## 🚀 Caratteristiche Principali
 
@@ -8,16 +14,16 @@ Una piattaforma web mobile-first per il trading collaborativo dove gli utenti po
 - **Autenticazione Sicura**: Registrazione e login con Supabase Auth
 - **Interfaccia Mobile-First**: Design ottimizzato per dispositivi mobili
 - **Voto BUY/SELL**: Sistema di voto intuitivo per ogni domanda di trading
-- **Statistiche in Tempo Reale**: Visualizzazione immediata dei risultati dei voti
+- **AI-Powered Analytics**: Statistiche in tempo reale potenziate dall'IA
 - **Storico Personale**: Tracciamento completo dei propri voti e statistiche
-- **Filtri e Ricerca**: Ricerca avanzata per categoria e parole chiave
+- **Filtri Intelligenti**: Ricerca avanzata per categoria e parole chiave
 
 ### Per gli Amministratori
 - **Pannello Admin Completo**: Gestione completa delle domande di trading
 - **CRUD Domande**: Creazione, modifica ed eliminazione delle domande
 - **Analytics Avanzate**: Grafici e statistiche dettagliate con Recharts
 - **Gestione Categorie**: Organizzazione delle domande per categoria
-- **Dashboard Statistiche**: Monitoraggio dell'attività della piattaforma
+- **Dashboard AI**: Monitoraggio dell'attività della piattaforma con insights IA
 
 ## 🛠️ Stack Tecnologico
 
@@ -36,23 +42,27 @@ Una piattaforma web mobile-first per il trading collaborativo dove gli utenti po
 - **Row Level Security (RLS)** - Sicurezza a livello di riga
 - **Supabase Auth** - Sistema di autenticazione
 
-### Deployment
-- **Frontend**: Deployment statico
-- **Database**: Supabase Cloud
+### Design System
+- **OOPS Tech Brand Colors** - Palette colori personalizzata
+- **Inter Font Family** - Typography moderna e leggibile
+- **Mobile-First Approach** - Design ottimizzato per mobile
+- **AI-Inspired UI** - Elementi di design ispirati all'intelligenza artificiale
 
-## 📱 Design e UX
+## 🎨 Branding OOPS Tech
 
-### Mobile-First
-- Design responsive ottimizzato per mobile
-- Touch-friendly interface
-- Navigazione semplificata per schermi piccoli
-- Performance ottimizzata per connessioni lente
+### Colori Principali
+- **Nero elegante**: #1a1a1a (colore principale)
+- **Bianco/Grigio chiaro**: #f8f9fa (sfondo)
+- **Blu tecnologico**: #007bff (accenti)
+- **Verde**: #28a745 (per BUY)
+- **Rosso**: #dc3545 (per SELL)
 
-### Accessibilità
-- Supporto per screen reader
-- Contrasti colori ottimizzati
-- Navigazione da tastiera
-- Testi alternativi per immagini
+### Elementi Distintivi
+- Logo OOPS Tech con icona Brain (cervello)
+- Tagline: "IA per Trading"
+- Messaging: "L'intelligenza artificiale che ridefinisce l'investimento"
+- Gradients e animazioni moderne
+- Badges "AI Powered" e "Live"
 
 ## 🏗️ Architettura
 
@@ -96,9 +106,9 @@ votes (
 ### Componenti Principali
 - **AuthContext**: Gestione stato autenticazione
 - **ProtectedRoute**: Protezione route autenticate
-- **QuestionCard**: Card per visualizzazione domande
-- **VoteAnalytics**: Componente analytics con grafici
-- **AdminPanel**: Pannello amministrativo completo
+- **QuestionCard**: Card per visualizzazione domande con stili OOPS Tech
+- **VoteAnalytics**: Componente analytics con grafici AI-powered
+- **AdminPanel**: Pannello amministrativo completo con branding
 
 ## 🚀 Setup e Installazione
 
@@ -110,7 +120,7 @@ votes (
 ### 1. Clone del Repository
 ```bash
 git clone <repository-url>
-cd trading-webapp
+cd oops-trading-webapp
 ```
 
 ### 2. Installazione Dipendenze
@@ -146,37 +156,37 @@ L'applicazione sarà disponibile su `http://localhost:5173`
 ### Per Utenti Normali
 
 1. **Registrazione/Login**
-   - Accedi alla piattaforma
+   - Accedi alla piattaforma OOPS Tech
    - Registra un nuovo account o effettua il login
    - Conferma l'email se richiesto
 
-2. **Votazione**
+2. **Votazione AI-Powered**
    - Visualizza le domande di trading attive
-   - Leggi titolo e descrizione
+   - Leggi titolo, descrizione e analisi AI
    - Vota BUY o SELL
-   - Visualizza i risultati in tempo reale
+   - Visualizza i risultati e sentiment in tempo reale
 
 3. **Profilo e Storico**
    - Accedi al tuo profilo
    - Visualizza lo storico dei tuoi voti
-   - Controlla le tue statistiche personali
+   - Controlla le tue statistiche personali e insights AI
 
 ### Per Amministratori
 
 1. **Accesso Admin**
    - Effettua il login con account admin
-   - Accedi al pannello amministrativo
+   - Accedi al pannello amministrativo OOPS Tech
 
 2. **Gestione Domande**
-   - Crea nuove domande di trading
+   - Crea nuove domande di trading AI-powered
    - Modifica domande esistenti
    - Attiva/disattiva domande
    - Imposta date di scadenza
 
-3. **Analytics**
+3. **Analytics AI**
    - Visualizza statistiche generali
    - Analizza i dati per categoria
-   - Monitora l'attività degli utenti
+   - Monitora l'attività degli utenti con insights IA
 
 ## 🔒 Sicurezza
 
@@ -190,24 +200,19 @@ L'applicazione sarà disponibile su `http://localhost:5173`
 - Sessioni gestite da Supabase Auth
 - Protezione CSRF integrata
 
-### Validazione
-- Validazione input lato client e server
-- Sanitizzazione dati utente
-- Prevenzione SQL injection
-
-## 📊 Analytics e Metriche
+## 📊 Analytics e Metriche AI
 
 ### Dati Tracciati
 - Numero totale voti per domanda
 - Distribuzione BUY vs SELL
-- Attività utenti nel tempo
+- Sentiment analysis in tempo reale
 - Performance per categoria
 - Tasso di partecipazione
 
-### Visualizzazioni
+### Visualizzazioni AI-Powered
 - Grafici a barre per confronto domande
 - Statistiche in tempo reale
-- Dashboard amministrativa
+- Dashboard amministrativa con insights IA
 - Storico personale utenti
 
 ## 🚀 Deployment
@@ -223,17 +228,15 @@ pnpm run build
 pnpm run preview
 ```
 
-### Deployment Frontend
-L'applicazione può essere deployata su:
-- Vercel
-- Netlify
-- GitHub Pages
-- Qualsiasi servizio di hosting statico
+### Deployment su Vercel (Raccomandato)
+1. Connetti il repository GitHub a Vercel
+2. Configura le variabili d'ambiente
+3. Deploy automatico
 
 ### Configurazione Produzione
 - Configura le variabili d'ambiente nel servizio di hosting
 - Assicurati che Supabase sia configurato per produzione
-- Configura CORS se necessario
+- Aggiorna Site URL in Supabase con il dominio finale
 
 ## 🧪 Testing
 
@@ -241,8 +244,8 @@ L'applicazione può essere deployata su:
 - [x] Registrazione e login utenti
 - [x] Creazione e gestione domande (admin)
 - [x] Sistema di voto BUY/SELL
-- [x] Visualizzazione statistiche
-- [x] Responsive design
+- [x] Visualizzazione statistiche AI
+- [x] Responsive design mobile-first
 
 ### Test di Sicurezza
 - [x] Protezione route admin
@@ -265,28 +268,30 @@ Questo progetto è rilasciato sotto licenza MIT. Vedi il file `LICENSE` per i de
 ## 🆘 Supporto
 
 Per supporto e domande:
+- Visita [www.oopstech.it](https://www.oopstech.it)
 - Apri un issue su GitHub
 - Consulta la documentazione Supabase
-- Controlla i log dell'applicazione
 
 ## 🔄 Roadmap Future
 
 ### Versione 2.0
-- [ ] Notifiche push
-- [ ] Chat in tempo reale
+- [ ] Notifiche push AI-powered
+- [ ] Chat in tempo reale con bot IA
 - [ ] API mobile native
 - [ ] Integrazione social media
-- [ ] Sistema di reputazione utenti
-- [ ] Analisi sentiment avanzata
+- [ ] Sistema di reputazione utenti basato su IA
+- [ ] Analisi sentiment avanzata con ML
 
 ### Miglioramenti Tecnici
 - [ ] Test automatizzati
 - [ ] CI/CD pipeline
-- [ ] Monitoring e logging
-- [ ] Cache Redis
-- [ ] Ottimizzazioni performance
+- [ ] Monitoring e logging avanzato
+- [ ] Cache Redis per performance
+- [ ] Ottimizzazioni AI/ML
 
 ---
 
-**Trading WebApp** - La piattaforma per le decisioni di trading collaborative 📈
+**OOPS Tech Trading WebApp** - L'intelligenza artificiale che ridefinisce l'investimento 🧠📈
+
+*Torino, Italia - Nel cuore dell'innovazione fintech*
 
