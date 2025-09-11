@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase, auth, users } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {
-    throw new Error('useAuth deve essere utilizzato all\'interno di AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
 }
@@ -15,82 +15,113 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    // Ottieni la sessione corrente
+    // Ottieni sessione corrente
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        setUser(session.user)
-        await loadUserProfile(session.user.id)
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Errore sessione:', error)
+          setUser(null)
+          setProfile(null)
+        } else if (session?.user) {
+          console.log('✅ Sessione trovata:', session.user.email)
+          setUser(session.user)
+          
+          // Crea profilo semplificato senza query al database
+          const simpleProfile = {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+            role: session.user.email === 'davide@oops.technology' ? 'admin' : 'user'
+          }
+          setProfile(simpleProfile)
+          console.log('✅ Profilo creato:', simpleProfile)
+        } else {
+          console.log('❌ Nessuna sessione attiva')
+          setUser(null)
+          setProfile(null)
+        }
+      } catch (error) {
+        console.error('Errore generale sessione:', error)
+        setUser(null)
+        setProfile(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     getSession()
 
-    // Ascolta i cambiamenti di autenticazione
+    // Listener per cambiamenti auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth state change:', event)
+        
         if (session?.user) {
           setUser(session.user)
-          await loadUserProfile(session.user.id)
+          
+          // Crea profilo semplificato
+          const simpleProfile = {
+            id: session.user.id,
+            email: session.user.email,
+            full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+            role: session.user.email === 'davide@oops.technology' ? 'admin' : 'user'
+          }
+          setProfile(simpleProfile)
+          console.log('✅ Profilo aggiornato:', simpleProfile)
         } else {
           setUser(null)
           setProfile(null)
-          setIsAdmin(false)
         }
         setLoading(false)
       }
     )
 
-    return () => subscription?.unsubscribe()
+    return () => subscription.unsubscribe()
   }, [])
 
-  const loadUserProfile = async (userId) => {
-    try {
-      const { data: profileData, error } = await users.getProfile(userId)
-      if (error) {
-        console.error('Errore nel caricamento del profilo:', error)
-        return
-      }
-      
-      setProfile(profileData)
-      setIsAdmin(profileData?.role === 'admin')
-    } catch (error) {
-      console.error('Errore nel caricamento del profilo:', error)
-    }
-  }
-
-  const signUp = async (email, password, fullName) => {
+  const signIn = async (email, password) => {
     try {
       setLoading(true)
-      const { data, error } = await auth.signUp(email, password, {
-        full_name: fullName
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       })
-      
+
       if (error) throw error
       
+      console.log('✅ Login riuscito:', data.user.email)
       return { data, error: null }
     } catch (error) {
-      console.error('Errore nella registrazione:', error)
+      console.error('❌ Errore login:', error)
       return { data: null, error }
     } finally {
       setLoading(false)
     }
   }
 
-  const signIn = async (email, password) => {
+  const signUp = async (email, password, fullName) => {
     try {
       setLoading(true)
-      const { data, error } = await auth.signIn(email, password)
-      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      })
+
       if (error) throw error
       
+      console.log('✅ Registrazione riuscita:', data.user?.email)
       return { data, error: null }
     } catch (error) {
-      console.error('Errore nel login:', error)
+      console.error('❌ Errore registrazione:', error)
       return { data: null, error }
     } finally {
       setLoading(false)
@@ -98,62 +129,40 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
-  try {
-    setLoading(true)
-    
-    // Pulisci lo stato locale PRIMA del logout
-    setUser(null)
-    setProfile(null)
-    
-    // Esegui il logout da Supabase
-    const { error } = await supabase.auth.signOut()
-    
-    if (error) {
-      console.error('Errore durante il logout:', error)
-      // Anche se c'è un errore, mantieni lo stato pulito
-    }
-    
-    // Forza il redirect alla pagina di login
-    window.location.href = '/'
-    
-  } catch (error) {
-    console.error('Errore durante il logout:', error)
-    // In caso di errore, pulisci comunque lo stato
-    setUser(null)
-    setProfile(null)
-    window.location.href = '/'
-  } finally {
-    setLoading(false)
-  }
-}
-
-
-  const updateProfile = async (updates) => {
     try {
-      if (!user) throw new Error('Utente non autenticato')
+      console.log('🔄 Logout in corso...')
       
-      const { data, error } = await users.updateProfile(user.id, updates)
+      // Pulisci stato locale IMMEDIATAMENTE
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
       
-      if (error) throw error
+      // Logout da Supabase in background
+      supabase.auth.signOut().catch(err => {
+        console.log('Errore logout Supabase (ignorato):', err)
+      })
       
-      setProfile(data[0])
-      return { data, error: null }
+      console.log('✅ Logout completato')
     } catch (error) {
-      console.error('Errore nell\'aggiornamento del profilo:', error)
-      return { data: null, error }
+      console.error('❌ Errore logout:', error)
+      // Anche in caso di errore, pulisci lo stato
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
     }
   }
+
+  // Determina se è admin basandosi solo sull'email
+  const isAdmin = profile?.email === 'davide@oops.technology' || user?.email === 'davide@oops.technology'
 
   const value = {
     user,
     profile,
     loading,
     isAdmin,
-    signUp,
     signIn,
-    signOut,
-    updateProfile,
-    loadUserProfile
+    signUp,
+    signOut
   }
 
   return (

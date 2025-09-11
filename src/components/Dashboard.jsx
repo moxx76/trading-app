@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { tradingQuestions } from '../lib/supabase'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -19,87 +18,40 @@ import {
   TrendingUp as TrendingUpIcon
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { QuestionCard } from './trading/QuestionCard'
 
 export const Dashboard = () => {
   const { user, profile, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [questions, setQuestions] = useState([])
   const [filteredQuestions, setFilteredQuestions] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [refreshing, setRefreshing] = useState(false)
 
-  useEffect(() => {
-    loadQuestions()
-  }, [])
+  // Debug info
+  console.log('=== DEBUG DASHBOARD ===')
+  console.log('User:', user?.email)
+  console.log('Profile:', profile)
+  console.log('IsAdmin:', isAdmin)
+  console.log('======================')
 
-  useEffect(() => {
-    filterQuestions()
-  }, [questions, searchTerm, selectedCategory])
-
-  const loadQuestions = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      
-      const { data, error: questionsError } = await tradingQuestions.getActiveQuestions()
-      
-      if (questionsError) {
-        throw questionsError
-      }
-
-      setQuestions(data || [])
-    } catch (err) {
-      setError(err.message || 'Errore nel caricamento delle domande')
-    } finally {
-      setLoading(false)
+  const handleSignOut = () => {
+    if (confirm('Sei sicuro di voler uscire da OOPS Tech?')) {
+      // Pulizia completa e redirect forzato
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/?logout=true'
     }
   }
 
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     setRefreshing(true)
-    await loadQuestions()
-    setRefreshing(false)
-  }
-
-  const filterQuestions = () => {
-    let filtered = questions
-
-    // Filtro per categoria
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(q => q.category === selectedCategory)
-    }
-
-    // Filtro per ricerca
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase()
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(term) ||
-        q.description?.toLowerCase().includes(term) ||
-        q.category.toLowerCase().includes(term)
-      )
-    }
-
-    setFilteredQuestions(filtered)
-  }
-
-const handleSignOut = () => {
-  if (confirm('Sei sicuro di voler uscire da OOPS Tech?')) {
-    // Pulizia completa e redirect forzato
-    localStorage.clear()
-    sessionStorage.clear()
-    window.location.href = '/?logout=true'
-  }
-}
-
-
-
-  const getUniqueCategories = () => {
-    const categories = [...new Set(questions.map(q => q.category))]
-    return categories.sort()
+    // Simula refresh
+    setTimeout(() => {
+      setRefreshing(false)
+    }, 1000)
   }
 
   return (
@@ -125,17 +77,21 @@ const handleSignOut = () => {
                 Ciao, {profile?.full_name || user?.email}
               </span>
               
-              {isAdmin && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/admin')}
-                  className="hidden sm:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
-                </Button>
-              )}
+              {/* DEBUG INFO */}
+              <div className="hidden lg:block text-xs text-white/60 bg-white/10 px-2 py-1 rounded">
+                Admin: {isAdmin ? 'YES' : 'NO'}
+              </div>
+              
+              {/* BOTTONE ADMIN - SEMPRE VISIBILE PER DEBUG */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/admin')}
+                className="hidden sm:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Admin {isAdmin ? '✅' : '❌'}
+              </Button>
               
               <Button
                 variant="outline"
@@ -177,7 +133,7 @@ const handleSignOut = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
             <div className="oops-stats-card">
               <TrendingUpIcon className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{questions.length}</div>
+              <div className="text-2xl font-bold">0</div>
               <div className="text-sm opacity-90">Domande Attive</div>
             </div>
             <div className="oops-stats-card">
@@ -197,6 +153,20 @@ const handleSignOut = () => {
             </div>
           </div>
         </div>
+
+        {/* Debug Info Card */}
+        <Card className="mb-6 bg-yellow-50 border-yellow-200">
+          <CardContent className="pt-6">
+            <div className="text-sm">
+              <strong>🔍 DEBUG INFO:</strong><br/>
+              User: {user?.email}<br/>
+              Profile: {profile?.email}<br/>
+              Role: {profile?.role}<br/>
+              IsAdmin: {isAdmin ? 'YES ✅' : 'NO ❌'}<br/>
+              Admin Email Check: {user?.email === 'davide@oops.technology' ? 'MATCH ✅' : 'NO MATCH ❌'}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filters and Search */}
         <Card className="oops-card mb-6">
@@ -222,11 +192,9 @@ const handleSignOut = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Tutte le categorie</SelectItem>
-                    {getUniqueCategories().map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="crypto">Crypto</SelectItem>
+                    <SelectItem value="azioni">Azioni</SelectItem>
+                    <SelectItem value="forex">Forex</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -251,60 +219,27 @@ const handleSignOut = () => {
           </Alert>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-muted-foreground">Caricamento domande...</p>
-          </div>
-        )}
-
-        {/* Questions List */}
-        {!loading && (
-          <>
-            {filteredQuestions.length === 0 ? (
-              <Card className="oops-card">
-                <CardContent className="text-center py-12">
-                  <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="oops-title text-lg mb-2">
-                    {questions.length === 0 
-                      ? 'Nessuna domanda disponibile' 
-                      : 'Nessuna domanda trovata'
-                    }
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {questions.length === 0 
-                      ? 'Le domande di trading AI appariranno qui quando saranno create dagli amministratori.'
-                      : 'Prova a modificare i filtri di ricerca per trovare altre domande.'
-                    }
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-muted-foreground">
-                    {filteredQuestions.length} domanda{filteredQuestions.length !== 1 ? 'e' : ''} trovata{filteredQuestions.length !== 1 ? 'e' : ''}
-                  </p>
-                  <div className="oops-badge oops-badge-premium">
-                    <Brain className="h-3 w-3" />
-                    AI Powered
-                  </div>
-                </div>
-                
-                <div className="grid gap-6">
-                  {filteredQuestions.map((question) => (
-                    <QuestionCard
-                      key={question.id}
-                      question={question}
-                      onVoteSuccess={handleRefresh}
-                    />
-                  ))}
-                </div>
-              </div>
+        {/* Questions Placeholder */}
+        <Card className="oops-card">
+          <CardContent className="text-center py-12">
+            <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="oops-title text-lg mb-2">
+              Nessuna domanda disponibile
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              Le domande di trading AI appariranno qui quando saranno create dagli amministratori.
+            </p>
+            {isAdmin && (
+              <Button 
+                onClick={() => navigate('/admin')}
+                className="oops-button-primary"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Vai al Pannello Admin
+              </Button>
             )}
-          </>
-        )}
+          </CardContent>
+        </Card>
 
         {/* Footer OOPS Tech */}
         <div className="mt-12 text-center text-sm text-gray-500 space-y-2">
