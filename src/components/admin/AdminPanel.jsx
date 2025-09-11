@@ -1,12 +1,21 @@
+import { useState } from 'react'
 import { useAuth } from '../../contexts/AuthContext'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Brain, Settings, Plus, BarChart3, Users, FileText, TrendingUp, Zap } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { QuestionForm } from './QuestionForm'
 
 export const AdminPanel = () => {
   const { profile, user } = useAuth()
   const navigate = useNavigate()
+  const [showQuestionForm, setShowQuestionForm] = useState(false)
+  const [questions, setQuestions] = useState([])
+
+  const handleQuestionCreated = (newQuestion) => {
+    console.log('✅ Nuova domanda creata:', newQuestion)
+    setQuestions(prev => [newQuestion, ...prev])
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,19 +69,6 @@ export const AdminPanel = () => {
           </p>
         </div>
 
-        {/* Debug Info */}
-        <Card className="mb-6 bg-green-50 border-green-200">
-          <CardContent className="pt-6">
-            <div className="text-sm">
-              <strong>✅ ADMIN PANEL ATTIVO!</strong><br/>
-              User: {user?.email}<br/>
-              Profile: {profile?.email}<br/>
-              Role: {profile?.role}<br/>
-              Accesso: Autorizzato ✅
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Quick Stats OOPS Tech Style */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card className="oops-stats-card">
@@ -83,7 +79,7 @@ export const AdminPanel = () => {
               <FileText className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-2xl font-bold text-white">{questions.length}</div>
               <p className="text-xs text-white/80">
                 Tutte le domande create
               </p>
@@ -98,7 +94,7 @@ export const AdminPanel = () => {
               <TrendingUp className="h-4 w-4 text-white/80" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-white">0</div>
+              <div className="text-2xl font-bold text-white">{questions.filter(q => q.is_active).length}</div>
               <p className="text-xs text-white/80">
                 Domande attualmente pubblicate
               </p>
@@ -139,6 +135,16 @@ export const AdminPanel = () => {
           </Card>
         </div>
 
+        {/* Question Form */}
+        {showQuestionForm && (
+          <div className="mb-8">
+            <QuestionForm
+              onClose={() => setShowQuestionForm(false)}
+              onSuccess={handleQuestionCreated}
+            />
+          </div>
+        )}
+
         {/* Main Admin Interface */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Gestione Domande */}
@@ -154,13 +160,17 @@ export const AdminPanel = () => {
                 <p className="text-sm text-gray-600">
                   Crea e gestisci le domande di trading AI per la community.
                 </p>
-                <Button className="w-full oops-button-primary">
+                <Button 
+                  className="w-full oops-button-primary"
+                  onClick={() => setShowQuestionForm(true)}
+                  disabled={showQuestionForm}
+                >
                   <Plus className="h-4 w-4 mr-2" />
-                  Nuova Domanda
+                  {showQuestionForm ? 'Form Aperto' : 'Nuova Domanda'}
                 </Button>
                 <Button variant="outline" className="w-full">
                   <FileText className="h-4 w-4 mr-2" />
-                  Gestisci Domande
+                  Gestisci Domande ({questions.length})
                 </Button>
               </div>
             </CardContent>
@@ -216,6 +226,38 @@ export const AdminPanel = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Lista Domande Create */}
+        {questions.length > 0 && (
+          <Card className="mt-8 oops-card">
+            <CardHeader>
+              <CardTitle className="oops-title flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                Domande Create ({questions.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {questions.map((question, index) => (
+                  <div key={question.id || index} className="p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      {question.title}
+                    </h4>
+                    {question.description && (
+                      <p className="text-sm text-gray-600 mb-2">
+                        {question.description}
+                      </p>
+                    )}
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Categoria: {question.category}</span>
+                      <span>Stato: {question.is_active ? '✅ Attiva' : '❌ Inattiva'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Success Message */}
         <Card className="mt-8 bg-green-50 border-green-200">
