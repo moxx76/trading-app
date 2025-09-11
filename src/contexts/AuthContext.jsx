@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext({})
@@ -16,38 +16,38 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // Determina se l'utente è admin basandosi sull'email
+  const isAdmin = user?.email === 'davide@oops.technology'
+
   useEffect(() => {
-    // Ottieni sessione corrente
+    // Ottieni la sessione corrente
     const getSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error('Errore sessione:', error)
-          setUser(null)
-          setProfile(null)
+          console.error('❌ Errore sessione:', error)
         } else if (session?.user) {
           console.log('✅ Sessione trovata:', session.user.email)
           setUser(session.user)
           
-          // Crea profilo semplificato senza query al database
-          const simpleProfile = {
+          // Crea profilo locale senza database
+          const localProfile = {
             id: session.user.id,
             email: session.user.email,
             full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-            role: session.user.email === 'davide@oops.technology' ? 'admin' : 'user'
+            role: session.user.email === 'davide@oops.technology' ? 'admin' : 'user',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
-          setProfile(simpleProfile)
-          console.log('✅ Profilo creato:', simpleProfile)
+          
+          setProfile(localProfile)
+          console.log('✅ Profilo locale creato:', localProfile)
         } else {
-          console.log('❌ Nessuna sessione attiva')
-          setUser(null)
-          setProfile(null)
+          console.log('ℹ️ Nessuna sessione attiva')
         }
       } catch (error) {
-        console.error('Errore generale sessione:', error)
-        setUser(null)
-        setProfile(null)
+        console.error('❌ Errore generale sessione:', error)
       } finally {
         setLoading(false)
       }
@@ -55,27 +55,30 @@ export const AuthProvider = ({ children }) => {
 
     getSession()
 
-    // Listener per cambiamenti auth
+    // Ascolta i cambiamenti di autenticazione
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('🔄 Auth state change:', event)
+        console.log('🔄 Auth state change:', event, session?.user?.email)
         
         if (session?.user) {
           setUser(session.user)
           
-          // Crea profilo semplificato
-          const simpleProfile = {
+          // Crea profilo locale
+          const localProfile = {
             id: session.user.id,
             email: session.user.email,
             full_name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-            role: session.user.email === 'davide@oops.technology' ? 'admin' : 'user'
+            role: session.user.email === 'davide@oops.technology' ? 'admin' : 'user',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           }
-          setProfile(simpleProfile)
-          console.log('✅ Profilo aggiornato:', simpleProfile)
+          
+          setProfile(localProfile)
         } else {
           setUser(null)
           setProfile(null)
         }
+        
         setLoading(false)
       }
     )
@@ -83,43 +86,29 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const signIn = async (email, password) => {
+  const signUp = async (email, password, userData = {}) => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) throw error
       
-      console.log('✅ Login riuscito:', data.user.email)
-      return { data, error: null }
-    } catch (error) {
-      console.error('❌ Errore login:', error)
-      return { data: null, error }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const signUp = async (email, password, fullName) => {
-    try {
-      setLoading(true)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            full_name: fullName
+            full_name: userData.full_name || email.split('@')[0],
+            ...userData
           }
         }
       })
 
-      if (error) throw error
-      
-      console.log('✅ Registrazione riuscita:', data.user?.email)
+      if (error) {
+        console.error('❌ Errore registrazione:', error)
+        throw error
+      }
+
+      console.log('✅ Registrazione completata:', data.user?.email)
       return { data, error: null }
+      
     } catch (error) {
       console.error('❌ Errore registrazione:', error)
       return { data: null, error }
@@ -128,40 +117,74 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signOut = async () => {
+  const signIn = async (email, password) => {
     try {
-      console.log('🔄 Logout in corso...')
+      setLoading(true)
       
-      // Pulisci stato locale IMMEDIATAMENTE
-      setUser(null)
-      setProfile(null)
-      setLoading(false)
-      
-      // Logout da Supabase in background
-      supabase.auth.signOut().catch(err => {
-        console.log('Errore logout Supabase (ignorato):', err)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
       })
+
+      if (error) {
+        console.error('❌ Errore login:', error)
+        throw error
+      }
+
+      console.log('✅ Login completato:', data.user?.email)
+      return { data, error: null }
       
-      console.log('✅ Logout completato')
     } catch (error) {
-      console.error('❌ Errore logout:', error)
-      // Anche in caso di errore, pulisci lo stato
-      setUser(null)
-      setProfile(null)
+      console.error('❌ Errore login:', error)
+      return { data: null, error }
+    } finally {
       setLoading(false)
     }
   }
 
-  // Determina se è admin basandosi solo sull'email
-  const isAdmin = profile?.email === 'davide@oops.technology' || user?.email === 'davide@oops.technology'
+  const signOut = async () => {
+    try {
+      console.log('🔄 Inizio logout...')
+      
+      // Pulisci stato locale PRIMA del logout
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      
+      // Pulisci storage del browser
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      // Logout da Supabase (in background)
+      supabase.auth.signOut().catch(err => {
+        console.log('⚠️ Errore logout Supabase (ignorato):', err)
+      })
+      
+      // Forza il redirect immediato
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 100)
+      
+    } catch (error) {
+      console.error('❌ Errore logout:', error)
+      
+      // Anche in caso di errore, forza la pulizia
+      setUser(null)
+      setProfile(null)
+      setLoading(false)
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/'
+    }
+  }
 
   const value = {
     user,
     profile,
     loading,
     isAdmin,
-    signIn,
     signUp,
+    signIn,
     signOut
   }
 

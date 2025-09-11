@@ -1,120 +1,45 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { Button } from '@/components/ui/button'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { 
   Brain, 
   LogOut, 
-  User, 
   Settings, 
-  Search,
-  Filter,
-  RefreshCw,
-  Loader2,
-  Zap,
-  TrendingUp as TrendingUpIcon,
-  ThumbsUp,
-  ThumbsDown,
+  Search, 
+  Filter, 
+  TrendingUp, 
+  TrendingDown, 
+  Users, 
   BarChart3,
-  Clock,
-  Smartphone
+  Smartphone,
+  Monitor,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
+  Clock
 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-
-// Storage utility che funziona su mobile
-const storage = {
-  set: (key, value) => {
-    try {
-      const data = JSON.stringify(value)
-      // Prova localStorage prima
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, data)
-        return true
-      }
-      // Fallback a sessionStorage
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem(key, data)
-        return true
-      }
-      // Fallback a variabile globale
-      if (typeof window !== 'undefined') {
-        window[`oops_${key}`] = data
-        return true
-      }
-      return false
-    } catch (error) {
-      console.warn('Storage error:', error)
-      return false
-    }
-  },
-  
-  get: (key) => {
-    try {
-      let data = null
-      // Prova localStorage prima
-      if (typeof localStorage !== 'undefined') {
-        data = localStorage.getItem(key)
-      }
-      // Fallback a sessionStorage
-      if (!data && typeof sessionStorage !== 'undefined') {
-        data = sessionStorage.getItem(key)
-      }
-      // Fallback a variabile globale
-      if (!data && typeof window !== 'undefined') {
-        data = window[`oops_${key}`]
-      }
-      
-      return data ? JSON.parse(data) : null
-    } catch (error) {
-      console.warn('Storage get error:', error)
-      return null
-    }
-  },
-  
-  clear: () => {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.clear()
-      }
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.clear()
-      }
-      if (typeof window !== 'undefined') {
-        Object.keys(window).forEach(key => {
-          if (key.startsWith('oops_')) {
-            delete window[key]
-          }
-        })
-      }
-    } catch (error) {
-      console.warn('Storage clear error:', error)
-    }
-  }
-}
 
 export const Dashboard = () => {
-  const { user, profile, signOut, isAdmin } = useAuth()
+  const { user, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const [questions, setQuestions] = useState([])
   const [filteredQuestions, setFilteredQuestions] = useState([])
-  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [refreshing, setRefreshing] = useState(false)
   const [votes, setVotes] = useState({})
+  const [storageStatus, setStorageStatus] = useState('loading')
   const [isMobile, setIsMobile] = useState(false)
-  const [storageStatus, setStorageStatus] = useState('checking')
 
-  // Rileva se è mobile
+  // Rilevamento mobile
   useEffect(() => {
     const checkMobile = () => {
-      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-                    window.innerWidth <= 768
-      setIsMobile(mobile)
-      console.log('📱 Mobile detected:', mobile)
+      setIsMobile(window.innerWidth < 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     }
     
     checkMobile()
@@ -122,268 +47,278 @@ export const Dashboard = () => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Carica domande con fallback robusto
-  useEffect(() => {
-    loadQuestionsRobust()
-  }, [user])
-
-  // Filtra domande
-  useEffect(() => {
-    let filtered = questions
-    
-    if (searchTerm) {
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    }
-    
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(q => q.category === selectedCategory)
-    }
-    
-    setFilteredQuestions(filtered)
-  }, [questions, searchTerm, selectedCategory])
-
-  const loadQuestionsRobust = async () => {
+  // Sistema storage robusto con fallback multipli
+  const loadData = () => {
     try {
-      setLoading(true)
-      setStorageStatus('loading')
+      // Prova localStorage
+      const savedQuestions = localStorage.getItem('oops_questions')
+      const savedVotes = localStorage.getItem('oops_votes')
       
-      console.log('🔄 Caricamento domande...')
-      console.log('📱 Mobile:', isMobile)
-      console.log('👤 User:', user?.email)
-      
-      // Prova a caricare da storage
-      let storedQuestions = storage.get('questions')
-      let storedVotes = storage.get('votes')
-      
-      console.log('💾 Stored questions:', storedQuestions?.length || 0)
-      console.log('🗳️ Stored votes:', Object.keys(storedVotes || {}).length)
-      
-      if (storedQuestions && storedQuestions.length > 0) {
-        setQuestions(storedQuestions)
+      if (savedQuestions) {
+        const parsedQuestions = JSON.parse(savedQuestions)
+        setQuestions(parsedQuestions)
         setStorageStatus('loaded')
+        console.log('✅ Dati caricati da localStorage:', parsedQuestions.length, 'domande')
       } else {
-        // Crea domande demo sempre disponibili
-        console.log('🎯 Creazione domande demo...')
-        const demoQuestions = createDemoQuestions()
-        setQuestions(demoQuestions)
-        storage.set('questions', demoQuestions)
-        setStorageStatus('demo')
+        // Fallback: sessionStorage
+        const sessionQuestions = sessionStorage.getItem('oops_questions')
+        if (sessionQuestions) {
+          const parsedQuestions = JSON.parse(sessionQuestions)
+          setQuestions(parsedQuestions)
+          setStorageStatus('session')
+          console.log('✅ Dati caricati da sessionStorage:', parsedQuestions.length, 'domande')
+        } else {
+          // Ultimo fallback: domande demo hardcoded
+          const demoQuestions = [
+            {
+              id: 'demo-1',
+              title: 'Bitcoin raggiungerà $100,000 entro fine 2025?',
+              description: 'Con l\'adozione istituzionale crescente e l\'halving del 2024, quale sarà la direzione di Bitcoin?',
+              category: 'crypto',
+              created_by: 'demo-user',
+              creator_email: 'demo@oops.technology',
+              is_active: true,
+              created_at: new Date(Date.now() - 86400000).toISOString(),
+              buy_votes: 156,
+              sell_votes: 89
+            },
+            {
+              id: 'demo-2', 
+              title: 'NVIDIA supererà $1,000 per azione nel 2025?',
+              description: 'L\'intelligenza artificiale continuerà a spingere il titolo NVIDIA verso nuovi massimi?',
+              category: 'azioni',
+              created_by: 'demo-user',
+              creator_email: 'demo@oops.technology', 
+              is_active: true,
+              created_at: new Date(Date.now() - 172800000).toISOString(),
+              buy_votes: 203,
+              sell_votes: 67
+            },
+            {
+              id: 'demo-3',
+              title: 'EUR/USD tornerà sopra 1.10 entro marzo 2025?',
+              description: 'Le politiche della BCE e della Fed influenzeranno significativamente il cambio euro-dollaro.',
+              category: 'forex',
+              created_by: 'demo-user',
+              creator_email: 'demo@oops.technology',
+              is_active: true,
+              created_at: new Date(Date.now() - 259200000).toISOString(),
+              buy_votes: 78,
+              sell_votes: 134
+            },
+            {
+              id: 'demo-4',
+              title: 'L\'oro supererà $2,500/oz nel 2025?',
+              description: 'Inflazione e incertezza geopolitica potrebbero spingere l\'oro verso nuovi record storici.',
+              category: 'commodities',
+              created_by: 'demo-user',
+              creator_email: 'demo@oops.technology',
+              is_active: true,
+              created_at: new Date(Date.now() - 345600000).toISOString(),
+              buy_votes: 167,
+              sell_votes: 98
+            }
+          ]
+          
+          setQuestions(demoQuestions)
+          setStorageStatus('demo')
+          console.log('✅ Dati demo caricati:', demoQuestions.length, 'domande')
+          
+          // Salva le demo per persistenza
+          try {
+            localStorage.setItem('oops_questions', JSON.stringify(demoQuestions))
+          } catch (e) {
+            sessionStorage.setItem('oops_questions', JSON.stringify(demoQuestions))
+          }
+        }
       }
       
-      if (storedVotes) {
-        setVotes(storedVotes)
+      // Carica voti
+      if (savedVotes) {
+        setVotes(JSON.parse(savedVotes))
       }
       
     } catch (error) {
-      console.error('❌ Errore caricamento:', error)
-      // Fallback assoluto - domande hardcoded
-      const fallbackQuestions = createDemoQuestions()
-      setQuestions(fallbackQuestions)
-      setStorageStatus('fallback')
-    } finally {
-      setLoading(false)
+      console.error('❌ Errore caricamento dati:', error)
+      setStorageStatus('error')
+      // Fallback finale: array vuoto
+      setQuestions([])
     }
   }
 
-  const createDemoQuestions = () => {
-    const now = new Date().toISOString()
-    return [
-      {
-        id: 'demo-btc-' + Date.now(),
-        title: 'Bitcoin raggiungerà $100,000 entro fine 2025?',
-        description: 'Considerando l\'adozione istituzionale crescente, l\'halving del 2024 e le politiche monetarie globali, quale sarà la direzione di Bitcoin?',
-        category: 'crypto',
-        created_by: user?.id || 'demo-user',
-        creator_email: user?.email || 'demo@oopstech.it',
-        is_active: true,
-        created_at: now,
-        buy_votes: 15,
-        sell_votes: 8
-      },
-      {
-        id: 'demo-tsla-' + Date.now(),
-        title: 'Tesla supererà $300 per azione entro giugno 2025?',
-        description: 'Con i nuovi modelli in arrivo, l\'espansione in Asia e gli sviluppi nell\'AI, come si comporterà il titolo TSLA?',
-        category: 'azioni',
-        created_by: user?.id || 'demo-user',
-        creator_email: user?.email || 'demo@oopstech.it',
-        is_active: true,
-        created_at: now,
-        buy_votes: 22,
-        sell_votes: 6
-      },
-      {
-        id: 'demo-eur-' + Date.now(),
-        title: 'EUR/USD salirà sopra 1.15 entro marzo 2025?',
-        description: 'Con le politiche BCE e Fed divergenti e l\'inflazione in calo, come si comporterà la coppia EUR/USD?',
-        category: 'forex',
-        created_by: user?.id || 'demo-user',
-        creator_email: user?.email || 'demo@oopstech.it',
-        is_active: true,
-        created_at: now,
-        buy_votes: 11,
-        sell_votes: 14
-      },
-      {
-        id: 'demo-ai-' + Date.now(),
-        title: 'Il settore AI crescerà del 50% nel 2025?',
-        description: 'Con l\'esplosione dell\'intelligenza artificiale e gli investimenti massicci, il settore tech AI continuerà la crescita esponenziale?',
-        category: 'azioni',
-        created_by: user?.id || 'demo-user',
-        creator_email: user?.email || 'demo@oopstech.it',
-        is_active: true,
-        created_at: now,
-        buy_votes: 28,
-        sell_votes: 4
-      }
-    ]
-  }
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  // Filtraggio domande
+  useEffect(() => {
+    let filtered = questions
+
+    // Filtro per categoria
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter(q => q.category === selectedCategory)
+    }
+
+    // Filtro per ricerca
+    if (searchTerm.trim()) {
+      const search = searchTerm.toLowerCase()
+      filtered = filtered.filter(q => 
+        q.title.toLowerCase().includes(search) ||
+        (q.description && q.description.toLowerCase().includes(search)) ||
+        q.category.toLowerCase().includes(search)
+      )
+    }
+
+    setFilteredQuestions(filtered)
+  }, [questions, selectedCategory, searchTerm])
 
   const handleVote = (questionId, voteType) => {
-    try {
-      console.log('🗳️ Voto:', questionId, voteType)
-      
-      const newVotes = { ...votes }
-      const voteKey = `${user?.id || 'demo'}-${questionId}`
-      
-      // Se ha già votato, rimuovi il voto
-      if (newVotes[voteKey]) {
-        delete newVotes[voteKey]
-        console.log('🗑️ Voto rimosso')
-      } else {
-        // Aggiungi nuovo voto
-        newVotes[voteKey] = {
-          questionId,
-          voteType,
-          userId: user?.id || 'demo',
-          timestamp: new Date().toISOString()
-        }
-        console.log('✅ Nuovo voto aggiunto')
-      }
-      
-      setVotes(newVotes)
-      storage.set('votes', newVotes)
-      
-      // Aggiorna contatori domande
-      const updatedQuestions = questions.map(q => {
+    const userVoteKey = `${user?.id}_${questionId}`
+    const currentVote = votes[userVoteKey]
+
+    // Aggiorna voti locali
+    const newVotes = { ...votes }
+    
+    if (currentVote === voteType) {
+      // Rimuovi voto se clicchi lo stesso
+      delete newVotes[userVoteKey]
+    } else {
+      // Aggiungi/cambia voto
+      newVotes[userVoteKey] = voteType
+    }
+    
+    setVotes(newVotes)
+    
+    // Aggiorna contatori domande
+    setQuestions(prevQuestions => 
+      prevQuestions.map(q => {
         if (q.id === questionId) {
-          const questionVotes = Object.values(newVotes).filter(v => v.questionId === questionId)
-          const buyCount = questionVotes.filter(v => v.voteType === 'BUY').length
-          const sellCount = questionVotes.filter(v => v.voteType === 'SELL').length
+          let newBuyVotes = q.buy_votes || 0
+          let newSellVotes = q.sell_votes || 0
+          
+          // Rimuovi voto precedente
+          if (currentVote === 'buy') newBuyVotes--
+          if (currentVote === 'sell') newSellVotes--
+          
+          // Aggiungi nuovo voto
+          if (newVotes[userVoteKey] === 'buy') newBuyVotes++
+          if (newVotes[userVoteKey] === 'sell') newSellVotes++
           
           return {
             ...q,
-            buy_votes: buyCount,
-            sell_votes: sellCount
+            buy_votes: Math.max(0, newBuyVotes),
+            sell_votes: Math.max(0, newSellVotes)
           }
         }
         return q
       })
-      
-      setQuestions(updatedQuestions)
-      storage.set('questions', updatedQuestions)
-      
-    } catch (error) {
-      console.error('❌ Errore voto:', error)
+    )
+    
+    // Salva in storage
+    try {
+      localStorage.setItem('oops_votes', JSON.stringify(newVotes))
+    } catch (e) {
+      sessionStorage.setItem('oops_votes', JSON.stringify(newVotes))
     }
-  }
-
-  const getUserVote = (questionId) => {
-    const voteKey = `${user?.id || 'demo'}-${questionId}`
-    return votes[voteKey]?.voteType || null
-  }
-
-  const handleSignOut = () => {
-    if (confirm('Sei sicuro di voler uscire da OOPS Tech?')) {
-      storage.clear()
-      window.location.href = '/?logout=true'
-    }
+    
+    console.log(`🗳️ Voto ${voteType.toUpperCase()} per domanda ${questionId}`)
   }
 
   const handleRefresh = () => {
     setRefreshing(true)
-    loadQuestionsRobust()
     setTimeout(() => {
+      loadData()
       setRefreshing(false)
     }, 1000)
   }
 
-  const categories = [
-    { value: 'all', label: 'Tutte le categorie' },
-    { value: 'crypto', label: 'Cryptocurrency' },
-    { value: 'azioni', label: 'Azioni' },
-    { value: 'forex', label: 'Forex' },
-    { value: 'commodities', label: 'Commodities' },
-    { value: 'indici', label: 'Indici' },
-    { value: 'generale', label: 'Generale' }
-  ]
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="oops-stats-card mb-4">
-            <Brain className="h-12 w-12 mx-auto mb-4 animate-pulse" />
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-            <p className="text-white">Caricamento OOPS Tech...</p>
-            <p className="text-white/60 text-sm mt-2">
-              {isMobile ? '📱 Modalità Mobile' : '💻 Modalità Desktop'}
-            </p>
-          </div>
-        </div>
-      </div>
-    )
+  const handleSignOut = () => {
+    if (confirm('Sei sicuro di voler uscire da OOPS Tech?')) {
+      localStorage.clear()
+      sessionStorage.clear()
+      window.location.href = '/?logout=true'
+    }
   }
 
+  const categories = [
+    { value: 'all', label: 'Tutte', icon: '🌐' },
+    { value: 'crypto', label: 'Crypto', icon: '₿' },
+    { value: 'azioni', label: 'Azioni', icon: '📈' },
+    { value: 'forex', label: 'Forex', icon: '💱' },
+    { value: 'commodities', label: 'Commodities', icon: '🛢️' },
+    { value: 'indici', label: 'Indici', icon: '📊' }
+  ]
+
+  const getStorageStatusInfo = () => {
+    switch (storageStatus) {
+      case 'loaded':
+        return { text: 'Dati Caricati', color: 'bg-green-100 text-green-800 border-green-200', icon: CheckCircle }
+      case 'session':
+        return { text: 'Sessione Attiva', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: Clock }
+      case 'demo':
+        return { text: 'Demo Attiva', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: Brain }
+      case 'error':
+        return { text: 'Modalità Fallback', color: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: AlertCircle }
+      default:
+        return { text: 'Caricamento...', color: 'bg-gray-100 text-gray-800 border-gray-200', icon: RefreshCw }
+    }
+  }
+
+  const statusInfo = getStorageStatusInfo()
+  const StatusIcon = statusInfo.icon
+
+  const totalVotes = filteredQuestions.reduce((sum, q) => sum + (q.buy_votes || 0) + (q.sell_votes || 0), 0)
+  const totalBuyVotes = filteredQuestions.reduce((sum, q) => sum + (q.buy_votes || 0), 0)
+  const totalSellVotes = filteredQuestions.reduce((sum, q) => sum + (q.sell_votes || 0), 0)
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header OOPS Tech */}
-      <header className="oops-header sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-gray-900 to-blue-900 text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-white/10 rounded-xl">
-                  <Brain className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="oops-logo text-white">OOPS Tech</h1>
-                  <p className="oops-tagline">Trading Dashboard</p>
-                </div>
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex items-center">
+              <Brain className="h-8 w-8 mr-3 text-blue-400" />
+              <div>
+                <h1 className="text-xl font-bold">OOPS Tech</h1>
+                <p className="text-xs text-blue-200">IA per Trading</p>
               </div>
             </div>
-            
+
+            {/* User Info & Actions */}
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <span className="hidden sm:block text-sm text-white/80">
-                Ciao, {profile?.full_name || user?.email}
-              </span>
-              
-              {/* BOTTONE ADMIN */}
+              {/* Device Indicator */}
+              <div className="hidden sm:flex items-center text-blue-200">
+                {isMobile ? <Smartphone className="h-4 w-4 mr-1" /> : <Monitor className="h-4 w-4 mr-1" />}
+                <span className="text-xs">{isMobile ? 'Mobile' : 'Desktop'}</span>
+              </div>
+
+              {/* Admin Button */}
               {isAdmin && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/admin')}
-                  className="hidden sm:flex bg-white/10 border-white/20 text-white hover:bg-white/20"
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                 >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Admin
+                  <Settings className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Admin</span>
                 </Button>
               )}
-              
+
+              {/* Profile Button */}
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/profile')}
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
-                <User className="h-4 w-4 sm:mr-2" />
+                <Users className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Profilo</span>
               </Button>
-              
+
+              {/* Logout Button */}
               <Button
                 variant="outline"
                 size="sm"
@@ -399,241 +334,298 @@ export const Dashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Welcome Section OOPS Tech */}
-        <div className="mb-8 text-center">
-          <h2 className="oops-hero-title text-3xl text-gray-900 mb-3">
-            L'intelligenza artificiale che ridefinisce l'investimento
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Benvenuto, {user?.email?.split('@')[0]}! 👋
           </h2>
-          <p className="oops-hero-subtitle text-gray-600 max-w-2xl mx-auto">
-            Vota sulle domande di trading e scopri cosa pensa la community. 
-            Powered by OOPS Tech AI.
+          <p className="text-gray-600">
+            L'intelligenza artificiale che ridefinisce l'investimento
           </p>
-          
-          {/* Stats rapide */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <div className="oops-stats-card">
-              <TrendingUpIcon className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{questions.length}</div>
-              <div className="text-sm opacity-90">Domande</div>
-            </div>
-            <div className="oops-stats-card">
-              <Brain className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">AI</div>
-              <div className="text-sm opacity-90">Powered</div>
-            </div>
-            <div className="oops-stats-card">
-              {isMobile ? <Smartphone className="h-6 w-6 mx-auto mb-2" /> : <Zap className="h-6 w-6 mx-auto mb-2" />}
-              <div className="text-2xl font-bold">{isMobile ? 'Mobile' : '24/7'}</div>
-              <div className="text-sm opacity-90">{isMobile ? 'Ready' : 'Attivo'}</div>
-            </div>
-            <div className="oops-stats-card">
-              <User className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">Demo</div>
-              <div className="text-sm opacity-90">Mode</div>
-            </div>
-          </div>
         </div>
 
-        {/* Status Info */}
-        <Alert className={`mb-6 ${
-          storageStatus === 'loaded' ? 'border-green-200 bg-green-50' :
-          storageStatus === 'demo' ? 'border-blue-200 bg-blue-50' :
-          'border-yellow-200 bg-yellow-50'
-        }`}>
-          <Brain className="h-4 w-4" />
-          <AlertDescription className={
-            storageStatus === 'loaded' ? 'text-green-800' :
-            storageStatus === 'demo' ? 'text-blue-800' :
-            'text-yellow-800'
-          }>
-            <strong>
-              {isMobile ? '📱 Mobile Mode' : '💻 Desktop Mode'} - 
-              {storageStatus === 'loaded' ? ' Dati Caricati' :
-               storageStatus === 'demo' ? ' Demo Attiva' :
-               ' Modalità Fallback'}:
-            </strong> 
-            {storageStatus === 'loaded' ? ' I tuoi dati sono stati ripristinati con successo.' :
-             storageStatus === 'demo' ? ' Domande demo caricate. Perfetto per testare l\'interfaccia OOPS Tech!' :
-             ' Sistema di backup attivo. Tutte le funzionalità disponibili.'}
+        {/* Status Alert */}
+        <Alert className={`mb-6 ${statusInfo.color}`}>
+          <StatusIcon className="h-4 w-4" />
+          <AlertDescription>
+            <strong>{isMobile ? '📱' : '💻'} {statusInfo.text}:</strong> 
+            {storageStatus === 'demo' && ' Modalità demo attiva con domande di esempio.'}
+            {storageStatus === 'loaded' && ' Dati caricati correttamente dal browser.'}
+            {storageStatus === 'session' && ' Dati temporanei della sessione corrente.'}
+            {storageStatus === 'error' && ' Utilizzando modalità di emergenza.'}
           </AlertDescription>
         </Alert>
 
-        {/* Filters and Search */}
-        <Card className="oops-card mb-6">
-          <CardContent className="pt-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <BarChart3 className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Domande Attive</p>
+                  <p className="text-2xl font-bold text-gray-900">{questions.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <TrendingUp className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Voti BUY</p>
+                  <p className="text-2xl font-bold text-green-600">{totalBuyVotes}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <TrendingDown className="h-8 w-8 text-red-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Voti SELL</p>
+                  <p className="text-2xl font-bold text-red-600">{totalSellVotes}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Users className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Sentiment</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {totalBuyVotes > totalSellVotes ? '🐂 Bullish' : totalSellVotes > totalBuyVotes ? '🐻 Bearish' : '⚖️ Neutrale'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
+              {/* Search */}
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Cerca domande di trading..."
+                    placeholder="Cerca domande..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>
               </div>
-              
-              <div className="sm:w-48">
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+              {/* Category Filter */}
+              <div className="flex gap-2 flex-wrap">
+                {categories.map((category) => (
+                  <Button
+                    key={category.value}
+                    variant={selectedCategory === category.value ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category.value)}
+                    className="whitespace-nowrap"
+                  >
+                    <span className="mr-1">{category.icon}</span>
+                    {category.label}
+                  </Button>
+                ))}
               </div>
-              
+
+              {/* Refresh */}
               <Button
                 variant="outline"
-                size="icon"
+                size="sm"
                 onClick={handleRefresh}
                 disabled={refreshing}
-                className="oops-button-primary"
+                className="whitespace-nowrap"
               >
-                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                Aggiorna
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Questions List */}
-        <div className="space-y-4">
-          {filteredQuestions.map((question) => {
-            const userVote = getUserVote(question.id)
-            const totalVotes = (question.buy_votes || 0) + (question.sell_votes || 0)
-            const buyPercentage = totalVotes > 0 ? ((question.buy_votes || 0) / totalVotes * 100) : 50
-            const sellPercentage = totalVotes > 0 ? ((question.sell_votes || 0) / totalVotes * 100) : 50
+        {/* Results Info - FIX REFUSO QUI */}
+        {searchTerm || selectedCategory !== 'all' ? (
+          <div className="mb-4">
+            <p className="text-sm text-gray-600">
+              {filteredQuestions.length === 0 ? (
+                'Nessuna domanda trovata'
+              ) : filteredQuestions.length === 1 ? (
+                '1 domanda trovata'
+              ) : (
+                `${filteredQuestions.length} domande trovate`
+              )}
+              {searchTerm && ` per "${searchTerm}"`}
+              {selectedCategory !== 'all' && ` nella categoria ${categories.find(c => c.value === selectedCategory)?.label}`}
+            </p>
+          </div>
+        ) : null}
 
-            return (
-              <Card key={question.id} className="oops-card">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="oops-title text-lg mb-2">
-                        {question.title}
-                      </CardTitle>
-                      {question.description && (
-                        <p className="text-gray-600 text-sm mb-3">
-                          {question.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span className="oops-badge oops-badge-category">
-                          {question.category}
-                        </span>
-                        <span className="flex items-center">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {new Date(question.created_at).toLocaleDateString()}
-                        </span>
-                        <span className="flex items-center">
-                          <BarChart3 className="h-3 w-3 mr-1" />
-                          {totalVotes} voti
-                        </span>
+        {/* Questions List */}
+        <div className="space-y-6">
+          {filteredQuestions.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Brain className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {searchTerm || selectedCategory !== 'all' ? 'Nessun risultato' : 'Nessuna domanda disponibile'}
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  {searchTerm || selectedCategory !== 'all' 
+                    ? 'Prova a modificare i filtri di ricerca.'
+                    : 'Le domande di trading appariranno qui quando saranno disponibili.'
+                  }
+                </p>
+                {(searchTerm || selectedCategory !== 'all') && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm('')
+                      setSelectedCategory('all')
+                    }}
+                  >
+                    Rimuovi Filtri
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          ) : (
+            filteredQuestions.map((question) => {
+              const userVote = votes[`${user?.id}_${question.id}`]
+              const totalVotes = (question.buy_votes || 0) + (question.sell_votes || 0)
+              const buyPercentage = totalVotes > 0 ? ((question.buy_votes || 0) / totalVotes) * 100 : 0
+              const sellPercentage = totalVotes > 0 ? ((question.sell_votes || 0) / totalVotes) * 100 : 0
+
+              return (
+                <Card key={question.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg mb-2">{question.title}</CardTitle>
+                        {question.description && (
+                          <p className="text-gray-600 text-sm mb-3">{question.description}</p>
+                        )}
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Badge variant="outline" className="capitalize">
+                            {categories.find(c => c.value === question.category)?.icon} {question.category}
+                          </Badge>
+                          <span>•</span>
+                          <span>da {question.creator_email?.split('@')[0] || 'Anonimo'}</span>
+                          <span>•</span>
+                          <span>{new Date(question.created_at).toLocaleDateString('it-IT')}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {/* Progress Bar */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      <span>BUY {buyPercentage.toFixed(0)}%</span>
-                      <span>SELL {sellPercentage.toFixed(0)}%</span>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Vote Buttons */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <Button
+                        onClick={() => handleVote(question.id, 'buy')}
+                        variant={userVote === 'buy' ? 'default' : 'outline'}
+                        className={`h-12 ${
+                          userVote === 'buy' 
+                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                            : 'border-green-600 text-green-600 hover:bg-green-50'
+                        }`}
+                      >
+                        <TrendingUp className="h-5 w-5 mr-2" />
+                        BUY ({question.buy_votes || 0})
+                      </Button>
+                      <Button
+                        onClick={() => handleVote(question.id, 'sell')}
+                        variant={userVote === 'sell' ? 'default' : 'outline'}
+                        className={`h-12 ${
+                          userVote === 'sell' 
+                            ? 'bg-red-600 hover:bg-red-700 text-white' 
+                            : 'border-red-600 text-red-600 hover:bg-red-50'
+                        }`}
+                      >
+                        <TrendingDown className="h-5 w-5 mr-2" />
+                        SELL ({question.sell_votes || 0})
+                      </Button>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-l-full transition-all duration-300"
-                        style={{ width: `${buyPercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
 
-                  {/* Vote Buttons */}
-                  <div className="flex gap-3">
-                    <Button
-                      onClick={() => handleVote(question.id, 'BUY')}
-                      variant={userVote === 'BUY' ? 'default' : 'outline'}
-                      className={`flex-1 ${
-                        userVote === 'BUY' 
-                          ? 'bg-green-600 hover:bg-green-700 text-white' 
-                          : 'border-green-600 text-green-600 hover:bg-green-50'
-                      }`}
-                    >
-                      <ThumbsUp className="h-4 w-4 mr-2" />
-                      BUY ({question.buy_votes || 0})
-                    </Button>
-                    
-                    <Button
-                      onClick={() => handleVote(question.id, 'SELL')}
-                      variant={userVote === 'SELL' ? 'default' : 'outline'}
-                      className={`flex-1 ${
-                        userVote === 'SELL' 
-                          ? 'bg-red-600 hover:bg-red-700 text-white' 
-                          : 'border-red-600 text-red-600 hover:bg-red-50'
-                      }`}
-                    >
-                      <ThumbsDown className="h-4 w-4 mr-2" />
-                      SELL ({question.sell_votes || 0})
-                    </Button>
-                  </div>
+                    {/* Progress Bar */}
+                    {totalVotes > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-green-600 font-medium">BUY {buyPercentage.toFixed(1)}%</span>
+                          <span className="text-red-600 font-medium">SELL {sellPercentage.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-l-full transition-all duration-500"
+                            style={{ width: `${buyPercentage}%` }}
+                          ></div>
+                          <div 
+                            className="bg-red-500 h-2 rounded-r-full transition-all duration-500 -mt-2 ml-auto"
+                            style={{ width: `${sellPercentage}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-center text-xs text-gray-500">
+                          {totalVotes} voti totali
+                        </p>
+                      </div>
+                    )}
 
-                  {userVote && (
-                    <p className="text-xs text-center mt-2 text-gray-500">
-                      Hai votato: <strong>{userVote}</strong> • Clicca di nuovo per rimuovere
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            )
-          })}
+                    {userVote && (
+                      <div className="mt-3 text-center">
+                        <Badge variant="outline" className={userVote === 'buy' ? 'border-green-500 text-green-700' : 'border-red-500 text-red-700'}>
+                          Hai votato {userVote.toUpperCase()}
+                        </Badge>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )
+            })
+          )}
         </div>
+      </main>
 
-        {filteredQuestions.length === 0 && (
-          <Card className="oops-card">
-            <CardContent className="text-center py-12">
-              <Brain className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="oops-title text-lg mb-2">
-                Nessuna domanda trovata
-              </h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm || selectedCategory !== 'all' 
-                  ? 'Prova a modificare i filtri di ricerca.'
-                  : 'Le domande di trading AI appariranno qui.'
-                }
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8 mt-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="flex items-center mb-4 md:mb-0">
+              <Brain className="h-6 w-6 mr-2 text-blue-400" />
+              <span className="font-semibold">OOPS Tech</span>
+              <Badge className="ml-2 bg-blue-600">AI Powered</Badge>
+            </div>
+            <div className="text-sm text-gray-400 text-center md:text-right">
+              <p>Il futuro non si prevede. Si crea.</p>
+              <p className="mt-1">
+                <a href="https://www.oopstech.it" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
+                  www.oopstech.it
+                </a>
               </p>
-              {isAdmin && (
-                <Button 
-                  onClick={() => navigate('/admin')}
-                  className="oops-button-primary"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Vai al Pannello Admin
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Footer OOPS Tech */}
-        <div className="mt-12 text-center text-sm text-gray-500 space-y-2">
-          <p>© 2025 OOPS Tech - L'intelligenza artificiale che ridefinisce l'investimento</p>
-          <p>Torino, Italia | <a href="https://www.oopstech.it" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">www.oopstech.it</a></p>
-          <p className="text-xs">
-            {isMobile ? '📱 Ottimizzato per Mobile' : '💻 Versione Desktop'} • 
+            </div>
+          </div>
+          
+          {/* Debug Footer */}
+          <div className="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500 text-center">
+            {isMobile ? '📱' : '💻'} Ottimizzato per {isMobile ? 'Mobile' : 'Desktop'} • 
             Storage: {storageStatus} • 
             Domande: {questions.length} • 
             Voti: {Object.keys(votes).length}
-          </p>
+          </div>
         </div>
-      </main>
+      </footer>
     </div>
   )
 }
