@@ -1,0 +1,375 @@
+/* OOPS Tech Custom Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* OOPS Tech Brand Colors */
+  --oops-primary: #1a1a1a;        /* Nero elegante principale */
+  --oops-secondary: #f8f9fa;      /* Bianco/grigio chiaro */
+  --oops-accent: #007bff;         /* Blu tecnologico */
+  --oops-success: #28a745;        /* Verde per BUY */
+  --oops-danger: #dc3545;         /* Rosso per SELL */
+  --oops-warning: #ffc107;        /* Giallo per alert */
+  --oops-info: #17a2b8;          /* Azzurro per info */
+  
+  /* Gradients */
+  --oops-gradient-primary: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+  --oops-gradient-accent: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  --oops-gradient-success: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  --oops-gradient-danger: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+  
+  /* Text Colors */
+  --oops-text-primary: #1a1a1a;
+  --oops-text-secondary: #6c757d;
+  --oops-text-light: #ffffff;
+  --oops-text-muted: #868e96;
+  
+  /* Background Colors */
+  --oops-bg-primary: #ffffff;
+  --oops-bg-secondary: #f8f9fa;
+  --oops-bg-dark: #1a1a1a;
+  --oops-bg-card: #ffffff;
+  
+  /* Border Colors */
+  --oops-border-light: #e9ecef;
+  --oops-border-medium: #dee2e6;
+  --oops-border-dark: #495057;
+  
+  /* Shadows */
+  --oops-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --oops-shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --oops-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  --oops-shadow-xl: 0 2rem 4rem rgba(0, 0, 0, 0.2);
+}
+
+/* Override default CSS variables for shadcn/ui */
+:root {
+  --background: var(--oops-bg-primary);
+  --foreground: var(--oops-text-primary);
+  --primary: var(--oops-primary);
+  --primary-foreground: var(--oops-text-light);
+  --secondary: var(--oops-secondary);
+  --secondary-foreground: var(--oops-text-primary);
+  --accent: var(--oops-accent);
+  --accent-foreground: var(--oops-text-light);
+  --destructive: var(--oops-danger);
+  --destructive-foreground: var(--oops-text-light);
+  --muted: var(--oops-bg-secondary);
+  --muted-foreground: var(--oops-text-muted);
+  --card: var(--oops-bg-card);
+  --card-foreground: var(--oops-text-primary);
+  --border: var(--oops-border-light);
+  --input: var(--oops-border-light);
+  --ring: var(--oops-accent);
+  --radius: 0.75rem;
+}
+
+/* Global Typography */
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--oops-bg-primary);
+  color: var(--oops-text-primary);
+  line-height: 1.6;
+}
+
+/* OOPS Tech Specific Components */
+.oops-header {
+  background: var(--oops-gradient-primary);
+  color: var(--oops-text-light);
+  box-shadow: var(--oops-shadow-md);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.oops-logo {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.75rem;
+  letter-spacing: -0.025em;
+  color: var(--oops-text-light);
+  text-decoration: none;
+}
+
+.oops-logo:hover {
+  color: var(--oops-text-light);
+  text-decoration: none;
+}
+
+.oops-tagline {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 0.25rem;
+}
+
+.oops-card {
+  background: var(--oops-bg-card);
+  border: 1px solid var(--oops-border-light);
+  border-radius: 1rem;
+  box-shadow: var(--oops-shadow-sm);
+  transition: all 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.oops-card:hover {
+  box-shadow: var(--oops-shadow-lg);
+  transform: translateY(-4px);
+  border-color: var(--oops-accent);
+}
+
+.oops-card-premium {
+  background: var(--oops-gradient-accent);
+  color: var(--oops-text-light);
+  border: none;
+}
+
+.oops-button-primary {
+  background: var(--oops-gradient-primary);
+  color: var(--oops-text-light);
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.875rem 2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.3s ease-in-out;
+  box-shadow: var(--oops-shadow-sm);
+}
+
+.oops-button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--oops-shadow-md);
+  background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
+}
+
+.oops-button-buy {
+  background: var(--oops-gradient-success);
+  color: var(--oops-text-light);
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.875rem 1.5rem;
+  transition: all 0.3s ease-in-out;
+  box-shadow: var(--oops-shadow-sm);
+}
+
+.oops-button-buy:hover {
+  background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.oops-button-sell {
+  background: var(--oops-gradient-danger);
+  color: var(--oops-text-light);
+  border: none;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 0.875rem 1.5rem;
+  transition: all 0.3s ease-in-out;
+  box-shadow: var(--oops-shadow-sm);
+}
+
+.oops-button-sell:hover {
+  background: linear-gradient(135deg, #e74c3c 0%, #dc3545 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+}
+
+.oops-stats-card {
+  background: var(--oops-gradient-accent);
+  color: var(--oops-text-light);
+  border-radius: 1.25rem;
+  padding: 2rem;
+  text-align: center;
+  border: none;
+  box-shadow: var(--oops-shadow-lg);
+}
+
+.oops-progress-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+  height: 0.75rem;
+  margin: 1rem 0;
+}
+
+.oops-progress-buy {
+  background: var(--oops-gradient-success);
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1rem;
+}
+
+.oops-progress-sell {
+  background: var(--oops-gradient-danger);
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1rem;
+}
+
+.oops-badge {
+  background: var(--oops-accent);
+  color: var(--oops-text-light);
+  padding: 0.375rem 1rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.oops-badge-success {
+  background: var(--oops-gradient-success);
+}
+
+.oops-badge-danger {
+  background: var(--oops-gradient-danger);
+}
+
+.oops-badge-premium {
+  background: var(--oops-gradient-accent);
+  animation: pulse 2s infinite;
+}
+
+/* Typography Classes */
+.oops-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: var(--oops-text-primary);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.oops-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: var(--oops-text-secondary);
+  line-height: 1.4;
+}
+
+.oops-body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  color: var(--oops-text-primary);
+  line-height: 1.6;
+}
+
+.oops-hero-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 3rem;
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+  background: var(--oops-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.oops-hero-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 1.25rem;
+  color: var(--oops-text-secondary);
+  line-height: 1.5;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.oops-animate-slide-up {
+  animation: slideInUp 0.6s ease-out;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .oops-hero-title {
+    font-size: 2rem;
+  }
+  
+  .oops-hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .oops-card {
+    margin: 0.5rem;
+    border-radius: 0.75rem;
+  }
+  
+  .oops-button-primary,
+  .oops-button-buy,
+  .oops-button-sell {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  .oops-stats-card {
+    padding: 1.5rem;
+  }
+  
+  .oops-logo {
+    font-size: 1.5rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --oops-bg-primary: #0f0f0f;
+    --oops-bg-secondary: #1a1a1a;
+    --oops-bg-card: #1a1a1a;
+    --oops-text-primary: #ffffff;
+    --oops-text-secondary: #b0b0b0;
+    --oops-border-light: #333333;
+    --oops-border-medium: #404040;
+  }
+  
+  .oops-card {
+    border-color: var(--oops-border-light);
+    background: var(--oops-bg-card);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--oops-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--oops-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--oops-primary);
+}
+
