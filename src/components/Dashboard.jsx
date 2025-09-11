@@ -86,20 +86,15 @@ export const Dashboard = () => {
     setFilteredQuestions(filtered)
   }
 
-  const handleSignOut = async () => {
-  try {
-    // Mostra un loading durante il logout
-    setRefreshing(true)
-    
-    await signOut()
-    
-    // Il redirect è gestito dall'AuthContext
-  } catch (error) {
-    console.error('Errore logout:', error)
-    // Forza il redirect anche in caso di errore
-    window.location.href = '/'
+const handleSignOut = () => {
+  if (confirm('Sei sicuro di voler uscire da OOPS Tech?')) {
+    // Pulizia completa e redirect forzato
+    localStorage.clear()
+    sessionStorage.clear()
+    window.location.href = '/?logout=true'
   }
 }
+
 
 
   const getUniqueCategories = () => {

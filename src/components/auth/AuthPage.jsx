@@ -1,10 +1,25 @@
-import { useState } from 'react'
 import { LoginForm } from './LoginForm'
 import { RegisterForm } from './RegisterForm'
 import { TrendingUp } from 'lucide-react'
+import { useState, useEffect } from 'react'
+
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true)
+
+  // AGGIUNGI QUESTO USEEFFECT
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('logout') === 'true') {
+      // Pulizia completa dopo logout
+      localStorage.clear()
+      sessionStorage.clear()
+      // Pulisci URL per rimuovere ?logout=true
+      window.history.replaceState({}, document.title, '/')
+      console.log('Logout completato - storage pulito')
+    }
+  }, [])
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
