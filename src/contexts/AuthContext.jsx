@@ -98,24 +98,35 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
-    try {
-      setLoading(true)
-      const { error } = await auth.signOut()
-      
-      if (error) throw error
-      
-      setUser(null)
-      setProfile(null)
-      setIsAdmin(false)
-      
-      return { error: null }
-    } catch (error) {
-      console.error('Errore nel logout:', error)
-      return { error }
-    } finally {
-      setLoading(false)
+  try {
+    setLoading(true)
+    
+    // Pulisci lo stato locale PRIMA del logout
+    setUser(null)
+    setProfile(null)
+    
+    // Esegui il logout da Supabase
+    const { error } = await supabase.auth.signOut()
+    
+    if (error) {
+      console.error('Errore durante il logout:', error)
+      // Anche se c'è un errore, mantieni lo stato pulito
     }
+    
+    // Forza il redirect alla pagina di login
+    window.location.href = '/'
+    
+  } catch (error) {
+    console.error('Errore durante il logout:', error)
+    // In caso di errore, pulisci comunque lo stato
+    setUser(null)
+    setProfile(null)
+    window.location.href = '/'
+  } finally {
+    setLoading(false)
   }
+}
+
 
   const updateProfile = async (updates) => {
     try {

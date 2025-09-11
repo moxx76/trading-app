@@ -87,8 +87,20 @@ export const Dashboard = () => {
   }
 
   const handleSignOut = async () => {
+  try {
+    // Mostra un loading durante il logout
+    setRefreshing(true)
+    
     await signOut()
+    
+    // Il redirect è gestito dall'AuthContext
+  } catch (error) {
+    console.error('Errore logout:', error)
+    // Forza il redirect anche in caso di errore
+    window.location.href = '/'
   }
+}
+
 
   const getUniqueCategories = () => {
     const categories = [...new Set(questions.map(q => q.category))]
