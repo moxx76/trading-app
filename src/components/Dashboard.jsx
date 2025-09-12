@@ -185,11 +185,11 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header OOPS Tech - Ottimizzato per mobile */}
+      {/* Header OOPS Tech */}
       <header className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white shadow-xl">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
-            {/* Logo OOPS Tech - Più piccolo su mobile */}
+            {/* Logo OOPS Tech */}
             <div className="flex items-center">
               <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
                 <Brain className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
@@ -208,7 +208,7 @@ export const Dashboard = () => {
               <span>Ciao, {profile?.full_name || user?.email?.split('@')[0] || 'Demo User'}</span>
             </div>
 
-            {/* Actions - Più compatti su mobile */}
+            {/* Actions */}
             <div className="flex items-center space-x-1 sm:space-x-3">
               {isAdmin && (
                 <Button
@@ -246,9 +246,9 @@ export const Dashboard = () => {
         </div>
       </header>
 
-      {/* Main Content - Padding ottimizzato per mobile */}
+      {/* Main Content */}
       <main className="max-w-2xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {/* Welcome Section - Font più piccoli su mobile */}
+        {/* Welcome Section */}
         <div className="text-center mb-6 sm:mb-8">
           <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
             Previsioni di Mercato
@@ -276,7 +276,7 @@ export const Dashboard = () => {
         {/* Single Question Display */}
         {!loading && questions.length > 0 && currentQuestion && (
           <div className="space-y-4 sm:space-y-6">
-            {/* Question Counter and Navigation - Più compatto su mobile */}
+            {/* Question Counter and Navigation */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
@@ -318,7 +318,7 @@ export const Dashboard = () => {
               </Button>
             </div>
 
-            {/* Question Card - Padding e font ottimizzati */}
+            {/* Question Card */}
             <Card className="bg-white shadow-xl rounded-2xl sm:rounded-3xl overflow-hidden border-0">
               <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 pb-4 sm:pb-6 pt-4 sm:pt-8 px-4 sm:px-8">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
@@ -344,14 +344,14 @@ export const Dashboard = () => {
               </CardHeader>
               
               <CardContent className="p-4 sm:p-8">
-                {/* BUY/SELL Buttons - COLORI ESPLICITI E SICURI */}
+                {/* BUY/SELL Buttons - COMPATTI E AFFIANCATI */}
                 {user && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
-                    {/* Pulsante BUY - VERDE GARANTITO */}
+                  <div className="flex items-center justify-center space-x-4">
+                    {/* Pulsante BUY - VERDE COMPATTO */}
                     <button
                       onClick={() => handleVote('BUY')}
                       disabled={isVoting}
-                      className={`h-14 sm:h-20 text-lg sm:text-xl font-bold rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-105 text-white shadow-lg hover:shadow-xl flex items-center justify-center ${
+                      className={`w-16 h-10 rounded-lg transition-all duration-200 flex items-center justify-center text-white font-medium text-sm shadow-md hover:shadow-lg ${
                         userVote === 'BUY' 
                           ? 'bg-green-700 hover:bg-green-800' 
                           : 'bg-green-600 hover:bg-green-700'
@@ -360,20 +360,20 @@ export const Dashboard = () => {
                         backgroundColor: userVote === 'BUY' ? '#15803d' : '#16a34a',
                         border: 'none'
                       }}
+                      title="Vota BUY"
                     >
                       {isVoting && userVote !== 'BUY' ? (
-                        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2 sm:mr-3" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
+                        <TrendingUp className="h-4 w-4" />
                       )}
-                      BUY
                     </button>
                     
-                    {/* Pulsante SELL - ROSSO GARANTITO */}
+                    {/* Pulsante SELL - ROSSO COMPATTO */}
                     <button
                       onClick={() => handleVote('SELL')}
                       disabled={isVoting}
-                      className={`h-14 sm:h-20 text-lg sm:text-xl font-bold rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-105 text-white shadow-lg hover:shadow-xl flex items-center justify-center ${
+                      className={`w-16 h-10 rounded-lg transition-all duration-200 flex items-center justify-center text-white font-medium text-sm shadow-md hover:shadow-lg ${
                         userVote === 'SELL' 
                           ? 'bg-red-700 hover:bg-red-800' 
                           : 'bg-red-600 hover:bg-red-700'
@@ -382,13 +382,13 @@ export const Dashboard = () => {
                         backgroundColor: userVote === 'SELL' ? '#b91c1c' : '#dc2626',
                         border: 'none'
                       }}
+                      title="Vota SELL"
                     >
                       {isVoting && userVote !== 'SELL' ? (
-                        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2 sm:mr-3" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
+                        <TrendingDown className="h-4 w-4" />
                       )}
-                      SELL
                     </button>
                   </div>
                 )}
