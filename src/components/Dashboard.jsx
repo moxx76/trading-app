@@ -185,39 +185,39 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header OOPS Tech */}
+      {/* Header OOPS Tech - Ottimizzato per mobile */}
       <header className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white shadow-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo OOPS Tech */}
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            {/* Logo OOPS Tech - Più piccolo su mobile */}
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-2 rounded-lg mr-3">
-                <Brain className="h-6 w-6 text-white" />
+              <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-1.5 sm:p-2 rounded-lg mr-2 sm:mr-3">
+                <Brain className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+                <h1 className="text-sm sm:text-xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
                   OOPS Tech
                 </h1>
-                <p className="text-xs text-blue-200 font-medium">IA per Trading</p>
+                <p className="text-xs text-blue-200 font-medium hidden sm:block">IA per Trading</p>
               </div>
             </div>
 
-            {/* User Info */}
-            <div className="hidden sm:flex items-center text-sm text-blue-200 mr-4">
+            {/* User Info - Solo su desktop */}
+            <div className="hidden md:flex items-center text-sm text-blue-200 mr-4">
               <User className="h-4 w-4 mr-2" />
               <span>Ciao, {profile?.full_name || user?.email?.split('@')[0] || 'Demo User'}</span>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center space-x-3">
+            {/* Actions - Più compatti su mobile */}
+            <div className="flex items-center space-x-1 sm:space-x-3">
               {isAdmin && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/admin')}
-                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all"
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all text-xs sm:text-sm px-2 sm:px-3"
                 >
-                  <Settings className="h-4 w-4 sm:mr-2" />
+                  <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                   <span className="hidden sm:inline">Admin</span>
                 </Button>
               )}
@@ -226,9 +226,9 @@ export const Dashboard = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate('/profile')}
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all text-xs sm:text-sm px-2 sm:px-3"
               >
-                <User className="h-4 w-4 sm:mr-2" />
+                <User className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Profilo</span>
               </Button>
 
@@ -236,9 +236,9 @@ export const Dashboard = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleSignOut}
-                className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all"
+                className="bg-white/10 border-white/30 text-white hover:bg-white/20 hover:border-white/40 transition-all text-xs sm:text-sm px-2 sm:px-3"
               >
-                <LogOut className="h-4 w-4 sm:mr-2" />
+                <LogOut className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Esci</span>
               </Button>
             </div>
@@ -246,51 +246,52 @@ export const Dashboard = () => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+      {/* Main Content - Padding ottimizzato per mobile */}
+      <main className="max-w-2xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Welcome Section - Font più piccoli su mobile */}
+        <div className="text-center mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
             Previsioni di Mercato
           </h2>
-          <p className="text-lg text-gray-600">
+          <p className="text-sm sm:text-lg text-gray-600">
             Benvenuto nell'era dell'intelligenza finanziaria potenziata
           </p>
         </div>
 
         {/* Error Display */}
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{error}</AlertDescription>
+          <Alert variant="destructive" className="mb-4 sm:mb-6">
+            <AlertDescription className="text-sm">{error}</AlertDescription>
           </Alert>
         )}
 
         {/* Loading State */}
         {loading && (
-          <div className="text-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Caricamento domande...</p>
+          <div className="text-center py-12 sm:py-16">
+            <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin mx-auto mb-3 sm:mb-4" />
+            <p className="text-sm text-muted-foreground">Caricamento domande...</p>
           </div>
         )}
 
         {/* Single Question Display */}
         {!loading && questions.length > 0 && currentQuestion && (
-          <div className="space-y-6">
-            {/* Question Counter and Navigation */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Question Counter and Navigation - Più compatto su mobile */}
             <div className="flex items-center justify-between">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={goToPreviousQuestion}
                 disabled={currentQuestionIndex === 0}
-                className="flex items-center"
+                className="flex items-center text-xs sm:text-sm px-2 sm:px-3"
               >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Precedente
+                <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden sm:inline">Precedente</span>
+                <span className="sm:hidden">Prec</span>
               </Button>
 
-              <div className="flex items-center space-x-4">
-                <span className="text-sm text-gray-600">
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <span className="text-xs sm:text-sm text-gray-600">
                   {currentQuestionIndex + 1} di {questions.length}
                 </span>
                 <Button
@@ -298,8 +299,9 @@ export const Dashboard = () => {
                   size="sm"
                   onClick={handleRefresh}
                   disabled={refreshing}
+                  className="p-1.5 sm:p-2"
                 >
-                  <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${refreshing ? 'animate-spin' : ''}`} />
                 </Button>
               </div>
 
@@ -308,87 +310,98 @@ export const Dashboard = () => {
                 size="sm"
                 onClick={goToNextQuestion}
                 disabled={currentQuestionIndex === questions.length - 1}
-                className="flex items-center"
+                className="flex items-center text-xs sm:text-sm px-2 sm:px-3"
               >
-                Successiva
-                <ChevronRight className="h-4 w-4 ml-1" />
+                <span className="hidden sm:inline">Successiva</span>
+                <span className="sm:hidden">Succ</span>
+                <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
               </Button>
             </div>
 
-            {/* Question Card */}
-            <Card className="bg-white shadow-xl rounded-3xl overflow-hidden border-0">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 pb-6 pt-8 px-8">
-                <div className="flex items-center justify-between mb-4">
-                  <Badge className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold border-0">
+            {/* Question Card - Padding e font ottimizzati */}
+            <Card className="bg-white shadow-xl rounded-2xl sm:rounded-3xl overflow-hidden border-0">
+              <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 pb-4 sm:pb-6 pt-4 sm:pt-8 px-4 sm:px-8">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
+                  <Badge className="bg-blue-100 text-blue-700 px-2 sm:px-4 py-1 sm:py-2 rounded-full font-semibold border-0 text-xs sm:text-sm">
                     {currentQuestion.category}
                   </Badge>
                   {userVote && (
-                    <Badge className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+                    <Badge className="bg-green-100 text-green-700 px-2 sm:px-3 py-1 rounded-full text-xs">
                       Hai votato {userVote}
                     </Badge>
                   )}
                 </div>
                 
-                <CardTitle className="text-2xl font-bold text-gray-900 leading-tight mb-4">
+                <CardTitle className="text-lg sm:text-2xl font-bold text-gray-900 leading-tight mb-2 sm:mb-4">
                   {currentQuestion.title}
                 </CardTitle>
                 
                 {currentQuestion.description && (
-                  <p className="text-gray-700 text-lg leading-relaxed">
+                  <p className="text-gray-700 text-sm sm:text-lg leading-relaxed">
                     {currentQuestion.description}
                   </p>
                 )}
               </CardHeader>
               
-              <CardContent className="p-8">
-                {/* BUY/SELL Buttons - Large and Prominent */}
+              <CardContent className="p-4 sm:p-8">
+                {/* BUY/SELL Buttons - COLORI ESPLICITI E SICURI */}
                 {user && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    <Button
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
+                    {/* Pulsante BUY - VERDE GARANTITO */}
+                    <button
                       onClick={() => handleVote('BUY')}
                       disabled={isVoting}
-                      className={`h-20 text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      className={`h-14 sm:h-20 text-lg sm:text-xl font-bold rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-105 text-white shadow-lg hover:shadow-xl flex items-center justify-center ${
                         userVote === 'BUY' 
-                          ? 'bg-green-600 hover:bg-green-700 text-white shadow-lg' 
-                          : 'bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl'
-                      }`}
+                          ? 'bg-green-700 hover:bg-green-800' 
+                          : 'bg-green-600 hover:bg-green-700'
+                      } ${isVoting ? 'opacity-75' : ''}`}
+                      style={{
+                        backgroundColor: userVote === 'BUY' ? '#15803d' : '#16a34a',
+                        border: 'none'
+                      }}
                     >
                       {isVoting && userVote !== 'BUY' ? (
-                        <Loader2 className="h-6 w-6 animate-spin mr-3" />
+                        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2 sm:mr-3" />
                       ) : (
-                        <TrendingUp className="h-6 w-6 mr-3" />
+                        <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
                       )}
                       BUY
-                    </Button>
+                    </button>
                     
-                    <Button
+                    {/* Pulsante SELL - ROSSO GARANTITO */}
+                    <button
                       onClick={() => handleVote('SELL')}
                       disabled={isVoting}
-                      className={`h-20 text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                      className={`h-14 sm:h-20 text-lg sm:text-xl font-bold rounded-xl sm:rounded-2xl transition-all duration-300 transform hover:scale-105 text-white shadow-lg hover:shadow-xl flex items-center justify-center ${
                         userVote === 'SELL' 
-                          ? 'bg-red-600 hover:bg-red-700 text-white shadow-lg' 
-                          : 'bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl'
-                      }`}
+                          ? 'bg-red-700 hover:bg-red-800' 
+                          : 'bg-red-600 hover:bg-red-700'
+                      } ${isVoting ? 'opacity-75' : ''}`}
+                      style={{
+                        backgroundColor: userVote === 'SELL' ? '#b91c1c' : '#dc2626',
+                        border: 'none'
+                      }}
                     >
                       {isVoting && userVote !== 'SELL' ? (
-                        <Loader2 className="h-6 w-6 animate-spin mr-3" />
+                        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mr-2 sm:mr-3" />
                       ) : (
-                        <TrendingDown className="h-6 w-6 mr-3" />
+                        <TrendingDown className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
                       )}
                       SELL
-                    </Button>
+                    </button>
                   </div>
                 )}
 
                 {/* Message for non-authenticated users */}
                 {!user && (
-                  <div className="text-center py-8">
-                    <p className="text-lg text-gray-600 mb-4">
+                  <div className="text-center py-6 sm:py-8">
+                    <p className="text-sm sm:text-lg text-gray-600 mb-3 sm:mb-4">
                       Accedi per votare su questa domanda
                     </p>
                     <Button
                       onClick={() => navigate('/auth')}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-xl text-sm sm:text-base"
                     >
                       Accedi ora
                     </Button>
@@ -401,21 +414,21 @@ export const Dashboard = () => {
 
         {/* No Questions State */}
         {!loading && questions.length === 0 && (
-          <div className="text-center py-16">
-            <div className="bg-white rounded-3xl shadow-lg p-12 border border-gray-100 max-w-md mx-auto">
-              <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-4 rounded-full w-20 h-20 mx-auto mb-6">
-                <Brain className="h-12 w-12 text-white mx-auto" />
+          <div className="text-center py-12 sm:py-16">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg p-6 sm:p-12 border border-gray-100 max-w-md mx-auto">
+              <div className="bg-gradient-to-r from-blue-400 to-indigo-400 p-3 sm:p-4 rounded-full w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6">
+                <Brain className="h-10 w-10 sm:h-12 sm:w-12 text-white mx-auto" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-3">
                 Nessuna domanda disponibile
               </h3>
-              <p className="text-gray-600 mb-6 leading-relaxed">
+              <p className="text-gray-600 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
                 Le domande di trading appariranno qui quando saranno create dagli amministratori.
               </p>
               <Button
                 variant="outline"
                 onClick={handleRefresh}
-                className="rounded-xl"
+                className="rounded-xl text-sm sm:text-base"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Ricarica
