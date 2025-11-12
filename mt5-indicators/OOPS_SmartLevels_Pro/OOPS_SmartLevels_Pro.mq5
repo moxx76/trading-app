@@ -118,12 +118,12 @@ Level g_DisplayLevels[];          // Livelli da visualizzare
 TradeSetup g_CurrentSetup;        // Setup trading corrente
 
 ENUM_MARKET_BIAS g_CurrentBias = BIAS_NEUTRAL;
-ENUM_RANGE_STATE g_CurrentRange = RANGE_NORMAL;
+ENUM_RANGE_STATE g_CurrentRangeState = RANGE_NORMAL;
 ENUM_SESSION_TYPE g_CurrentSession = SESSION_UNKNOWN;
 
 double g_BiasScore = 0.0;
 double g_RangeZScore = 0.0;
-double g_CurrentRange = 0.0;
+double g_CurrentRangeValue = 0.0;
 
 int g_LastCalculatedBar = -1;
 
@@ -276,7 +276,7 @@ int OnCalculate(const int rates_total,
    // 4. Analizza Dynamic Range
    if(g_RangeAnalyzer != NULL)
    {
-      g_CurrentRange = g_RangeAnalyzer.AnalyzeRange(high, low, rates_total, current_bar, g_RangeZScore, g_CurrentRange);
+      g_CurrentRangeState = g_RangeAnalyzer.AnalyzeRange(high, low, rates_total, current_bar, g_RangeZScore, g_CurrentRangeValue);
    }
 
    // 5. Raccogli tutti i livelli
@@ -320,7 +320,7 @@ int OnCalculate(const int rates_total,
    Level nearest_support, nearest_resistance;
    FindNearestLevels(g_DisplayLevels, close[current_bar], nearest_support, nearest_resistance);
    g_CurrentSetup = CTradeSetupGenerator::GenerateSetup(close[current_bar], nearest_support, nearest_resistance,
-                                                         g_CurrentBias, g_CurrentRange);
+                                                         g_CurrentBias, g_CurrentRangeValue);
 
    // 9. Disegna pannello informativo
    if(Show_InfoPanel)
@@ -539,7 +539,7 @@ void DrawInfoPanel(double current_price)
    current_y += line_height;
 
    // Range
-   string range_text = g_RangeAnalyzer.GetStateName(g_CurrentRange) + StringFormat(" (Z: %.2f)", g_RangeZScore);
+   string range_text = g_RangeAnalyzer.GetStateName(g_CurrentRangeState) + StringFormat(" (Z: %.2f)", g_RangeZScore);
    CreateLabel("OOPS_Panel_Range", x, current_y, "Range: " + range_text, clrAqua, 9);
    current_y += line_height;
 
