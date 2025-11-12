@@ -272,6 +272,54 @@ Per supporto e domande:
 - Apri un issue su GitHub
 - Consulta la documentazione Supabase
 
+## 📊 Indicatore MetaTrader 5 - DAX ZigZag Strategy
+
+### 🎯 Descrizione
+
+Questo repository include anche un **indicatore avanzato per MetaTrader 5** che implementa la strategia DAX ZigZag 0.3%.
+
+L'indicatore automatizza:
+- ✅ Rilevamento pattern 1-2-3 (LONG/SHORT)
+- ✅ Calcolo automatico Entry, Stop Loss e Target
+- ✅ Visualizzazione grafica completa con zone rischio/profitto
+- ✅ Sistema alert multi-canale (popup, suono, push, email)
+- ✅ Statistiche e tracking in tempo reale
+- ✅ Export CSV per analisi performance
+
+### 📥 File MT5
+
+I file dell'indicatore si trovano nella cartella [`mt5-indicators/`](./mt5-indicators/):
+
+- **`DAX_ZigZag_Strategy.mq5`** - Indicatore principale MQL5
+- **`README_INDICATOR.md`** - Documentazione completa (Italian)
+- **`GUIDA_RAPIDA.md`** - Guida installazione rapida
+
+### 🚀 Installazione Rapida
+
+1. Copia `DAX_ZigZag_Strategy.mq5` in `MQL5\Indicators\`
+2. Compila con MetaEditor (F7)
+3. Applica al grafico DAX M10
+
+**Documentazione completa**: [mt5-indicators/README_INDICATOR.md](./mt5-indicators/README_INDICATOR.md)
+
+### 🎯 Caratteristiche MT5 Indicator
+
+- **ZigZag 0.3%** per filtrare il rumore di mercato
+- **Target fisso 40 punti** configurabile
+- **Rischio massimo 150 punti** con filtri automatici
+- **3 modalità entry**: tocco, consolidato, migliorato
+- **Pannello informativo** con statistiche live
+- **Zone semi-trasparenti** per visualizzare rischio/profitto
+- **Export CSV** per backtesting esterno
+
+### ⚠️ Disclaimer Trading
+
+⚠️ **Attenzione**: Il trading comporta rischio di perdita capitale.
+- L'indicatore è uno strumento di analisi, non un consiglio finanziario
+- Testa sempre su account demo prima di operare con denaro reale
+- Usa stop loss e money management appropriati
+- I risultati passati non garantiscono performance future
+
 ## 🔄 Roadmap Future
 
 ### Versione 2.0
