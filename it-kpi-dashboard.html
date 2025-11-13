@@ -639,6 +639,10 @@
                     <div class="legend-color" style="background: #F44336;"></div>
                     <span>Performance KPIs</span>
                 </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #00BCD4;"></div>
+                    <span>DEX End User</span>
+                </div>
             </div>
 
             <div class="legend-section">
@@ -1128,6 +1132,206 @@
                             }
                         }
                     ]
+                },
+                {
+                    id: "dex",
+                    name: "DEX End User",
+                    level: 1,
+                    color: "#00BCD4",
+                    children: [
+                        {
+                            id: "boot-time",
+                            name: "Boot Time Score",
+                            level: 2,
+                            value: 82,
+                            target: 85,
+                            trend: "up",
+                            unit: "%",
+                            description: "Score medio tempo di avvio dispositivi (target <45 secondi)",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 78 },
+                                    { month: "Ago", value: 79 },
+                                    { month: "Set", value: 80 },
+                                    { month: "Ott", value: 81 },
+                                    { month: "Nov", value: 82 }
+                                ],
+                                breakdown: [
+                                    { category: "< 30 sec (Excellent)", value: 45, count: 450 },
+                                    { category: "30-45 sec (Good)", value: 37, count: 370 },
+                                    { category: "45-60 sec (Average)", value: 12, count: 120 },
+                                    { category: "> 60 sec (Poor)", value: 6, count: 60 }
+                                ],
+                                actions: [
+                                    "Ottimizzare startup items su 180 dispositivi lenti",
+                                    "Sostituire HDD con SSD su workstation legacy",
+                                    "Implementare fast boot BIOS settings",
+                                    "Analizzare driver e servizi che rallentano boot"
+                                ],
+                                additionalMetrics: {
+                                    avgBootTime: "38.5 sec",
+                                    medianBootTime: "35 sec",
+                                    p95BootTime: "62 sec",
+                                    devicesImproved: "+45 rispetto al mese scorso"
+                                }
+                            }
+                        },
+                        {
+                            id: "app-performance",
+                            name: "App Performance Score",
+                            level: 2,
+                            value: 88,
+                            target: 90,
+                            trend: "stable",
+                            unit: "%",
+                            description: "Score prestazioni applicazioni business-critical",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 86 },
+                                    { month: "Ago", value: 87 },
+                                    { month: "Set", value: 88 },
+                                    { month: "Ott", value: 88 },
+                                    { month: "Nov", value: 88 }
+                                ],
+                                breakdown: [
+                                    { category: "Microsoft Office 365", value: 95, count: 1000 },
+                                    { category: "SAP ERP", value: 82, count: 450 },
+                                    { category: "Browser (Chrome/Edge)", value: 92, count: 1000 },
+                                    { category: "Custom LOB Apps", value: 75, count: 300 },
+                                    { category: "Communication Tools", value: 90, count: 1000 }
+                                ],
+                                actions: [
+                                    "Ottimizzare performance SAP su client sottodimensionati",
+                                    "Aggiornare custom LOB apps con nuove API",
+                                    "Aumentare RAM su 150 workstation per app pesanti",
+                                    "Implementare application performance monitoring"
+                                ],
+                                additionalMetrics: {
+                                    avgResponseTime: "1.2 sec",
+                                    crashRate: "0.3%",
+                                    hangRate: "1.2%",
+                                    userComplaints: "23 ticket/mese (-12% vs mese scorso)"
+                                }
+                            }
+                        },
+                        {
+                            id: "user-sentiment",
+                            name: "User Sentiment Score",
+                            level: 2,
+                            value: 76,
+                            target: 80,
+                            trend: "up",
+                            unit: "%",
+                            description: "Score sentiment utenti basato su feedback e survey",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 72 },
+                                    { month: "Ago", value: 73 },
+                                    { month: "Set", value: 74 },
+                                    { month: "Ott", value: 75 },
+                                    { month: "Nov", value: 76 }
+                                ],
+                                breakdown: [
+                                    { category: "Very Satisfied (5★)", value: 35, count: 350 },
+                                    { category: "Satisfied (4★)", value: 41, count: 410 },
+                                    { category: "Neutral (3★)", value: 18, count: 180 },
+                                    { category: "Unsatisfied (2★)", value: 4, count: 40 },
+                                    { category: "Very Unsatisfied (1★)", value: 2, count: 20 }
+                                ],
+                                actions: [
+                                    "Indagare cause insoddisfazione 60 utenti (1-2★)",
+                                    "Aumentare comunicazione proattiva su miglioramenti",
+                                    "Implementare in-app feedback collection",
+                                    "Organizzare focus group con power users",
+                                    "Ridurre friction points identificati da survey"
+                                ],
+                                additionalMetrics: {
+                                    surveyResponseRate: "68%",
+                                    npsScore: "+42",
+                                    topComplaint: "Lentezza applicazioni legacy",
+                                    topPraise: "Supporto IT veloce e competente"
+                                }
+                            }
+                        },
+                        {
+                            id: "system-health",
+                            name: "System Health Score",
+                            level: 2,
+                            value: 91,
+                            target: 92,
+                            trend: "stable",
+                            unit: "%",
+                            description: "Score salute complessiva sistemi endpoint",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 89 },
+                                    { month: "Ago", value: 90 },
+                                    { month: "Set", value: 91 },
+                                    { month: "Ott", value: 91 },
+                                    { month: "Nov", value: 91 }
+                                ],
+                                breakdown: [
+                                    { category: "CPU Health", value: 94, count: 940 },
+                                    { category: "Memory Health", value: 89, count: 890 },
+                                    { category: "Disk Health", value: 92, count: 920 },
+                                    { category: "Network Health", value: 88, count: 880 },
+                                    { category: "Battery Health (Laptop)", value: 85, count: 425 }
+                                ],
+                                actions: [
+                                    "Sostituire 60 laptop con battery health < 70%",
+                                    "Upgrade RAM su 110 dispositivi con memory pressure",
+                                    "Monitorare 120 dischi con SMART warnings",
+                                    "Investigare problemi network intermittenti",
+                                    "Schedulare maintenance preventivo trimestrale"
+                                ],
+                                additionalMetrics: {
+                                    devicesAtRisk: "37 (3.7%)",
+                                    avgCpuUsage: "42%",
+                                    avgMemoryUsage: "68%",
+                                    avgDiskUsage: "58%"
+                                }
+                            }
+                        },
+                        {
+                            id: "productivity-impact",
+                            name: "Productivity Impact",
+                            level: 2,
+                            value: 85,
+                            target: 90,
+                            trend: "up",
+                            unit: "%",
+                            description: "Score impatto tecnologia su produttività utenti",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 81 },
+                                    { month: "Ago", value: 82 },
+                                    { month: "Set", value: 83 },
+                                    { month: "Ott", value: 84 },
+                                    { month: "Nov", value: 85 }
+                                ],
+                                breakdown: [
+                                    { category: "Zero Downtime Days", value: 92, count: 920 },
+                                    { category: "Quick Problem Resolution", value: 87, count: 870 },
+                                    { category: "Tool Adoption Rate", value: 78, count: 780 },
+                                    { category: "Training Completion", value: 82, count: 820 },
+                                    { category: "Automation Usage", value: 73, count: 730 }
+                                ],
+                                actions: [
+                                    "Aumentare adoption rate nuovi collaboration tools",
+                                    "Completare training su automation workflows",
+                                    "Ridurre incident che causano downtime produttivo",
+                                    "Implementare self-healing capabilities",
+                                    "Creare knowledge base self-service più completa"
+                                ],
+                                additionalMetrics: {
+                                    avgDowntimePerUser: "2.3 ore/mese",
+                                    incidentImpact: "€45,000/mese stimato",
+                                    automationSaved: "1,250 ore/mese",
+                                    selfServiceRate: "62%"
+                                }
+                            }
+                        }
+                    ]
                 }
             ]
         };
@@ -1503,8 +1707,32 @@
                     <div class="trend-chart">
                         <svg id="trend-chart-svg" width="100%" height="200"></svg>
                     </div>
-                </div>
+                </div>`;
 
+            // Add additional metrics section if available (for DEX metrics)
+            if (node.details.additionalMetrics) {
+                content += `
+                <div class="panel-section">
+                    <h3>📌 Metriche Aggiuntive</h3>
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        ${Object.entries(node.details.additionalMetrics).map(([key, value]) => {
+                            // Convert camelCase to readable text
+                            const label = key
+                                .replace(/([A-Z])/g, ' $1')
+                                .replace(/^./, str => str.toUpperCase())
+                                .trim();
+                            return `
+                                <div style="padding: 10px; background: white; border-radius: 6px; border-left: 3px solid ${node.parent.color};">
+                                    <div style="font-size: 11px; color: #666; margin-bottom: 4px;">${label}</div>
+                                    <div style="font-size: 16px; font-weight: 600; color: #333;">${value}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>`;
+            }
+
+            content += `
                 <div class="panel-section">
                     <h3>📈 Breakdown Dettagliato</h3>
                     <table class="data-table">
