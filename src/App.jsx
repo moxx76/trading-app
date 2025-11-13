@@ -2,11 +2,12 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AuthPage } from './components/auth/AuthPage'
-import { Dashboard } from './components/Dashboard'
+import { ChristmasDashboard } from './components/ChristmasDashboard'
 import { AdminPanel } from './components/admin/AdminPanel'
 import { UserProfile } from './components/UserProfile'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
 import './styles/oops-theme.css'
+import './styles/christmas.css'
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -29,13 +30,13 @@ function AppContent() {
           path="/" 
           element={user ? <Navigate to="/dashboard" replace /> : <AuthPage />} 
         />
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <ChristmasDashboard />
             </ProtectedRoute>
-          } 
+          }
         />
         <Route 
           path="/admin" 
