@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT KPI Dashboard - Interactive Radial View</title>
+
+    <!-- D3.js v7 from CDN -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.95;
+        }
+
+        .last-updated {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .filter-select:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .filter-select option {
+            background: #667eea;
+            color: white;
+        }
+
+        /* ===== CONTROLS BAR ===== */
+        .controls {
+            background: white;
+            padding: 15px 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #2196F3;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container {
+            display: flex;
+            position: relative;
+            height: calc(100vh - 180px);
+        }
+
+        /* ===== LEGEND ===== */
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-width: 250px;
+        }
+
+        .legend h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+
+        .legend-section {
+            margin-bottom: 15px;
+        }
+
+        .legend-section h4 {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .legend-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* ===== VISUALIZATION AREA ===== */
+        .viz-container {
+            flex: 1;
+            position: relative;
+            background: white;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        #dashboard-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ===== D3 NODE STYLES ===== */
+        .node circle {
+            stroke: white;
+            stroke-width: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .node:hover circle {
+            stroke-width: 4px;
+            filter: brightness(1.1);
+        }
+
+        .node text {
+            font-size: 12px;
+            font-weight: 600;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #333;
+        }
+
+        .node.root text {
+            font-size: 14px;
+            fill: white;
+        }
+
+        .node.category text {
+            font-size: 11px;
+            fill: white;
+        }
+
+        .node.metric text {
+            font-size: 10px;
+        }
+
+        .link {
+            stroke: #999;
+            stroke-opacity: 0.3;
+            stroke-width: 2px;
+            fill: none;
+        }
+
+        .node.highlighted circle {
+            stroke: #FFD700;
+            stroke-width: 5px;
+            filter: drop-shadow(0 0 10px #FFD700);
+        }
+
+        .node.dimmed {
+            opacity: 0.3;
+        }
+
+        /* ===== TOOLTIP ===== */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 6px;
+        }
+
+        .tooltip-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .tooltip-label {
+            color: #aaa;
+        }
+
+        .tooltip-value {
+            font-weight: 600;
+            margin-left: 15px;
+        }
+
+        .trend-up {
+            color: #4CAF50;
+        }
+
+        .trend-down {
+            color: #F44336;
+        }
+
+        .trend-stable {
+            color: #FF9800;
+        }
+
+        /* ===== SIDE PANEL ===== */
+        .side-panel {
+            position: fixed;
+            right: -500px;
+            top: 0;
+            width: 500px;
+            height: 100vh;
+            background: white;
+            box-shadow: -4px 0 20px rgba(0,0,0,0.2);
+            z-index: 2000;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .side-panel.open {
+            right: 0;
+        }
+
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        .panel-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .panel-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .panel-header h2 {
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .panel-header .kpi-value {
+            font-size: 36px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .panel-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 28px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .panel-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .panel-content {
+            padding: 25px;
+        }
+
+        .panel-section {
+            margin-bottom: 30px;
+        }
+
+        .panel-section h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+            border-left: 4px solid #2196F3;
+            padding-left: 12px;
+        }
+
+        .trend-chart {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .data-table th {
+            background: #f0f0f0;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .action-suggestions {
+            background: #fff3e0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #FF9800;
+        }
+
+        .action-suggestions h4 {
+            color: #F57C00;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .action-suggestions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .action-suggestions li {
+            padding: 8px 0;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .action-suggestions li:before {
+            content: "→ ";
+            color: #FF9800;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* ===== STATUS BADGES ===== */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-good {
+            background: #C8E6C9;
+            color: #2E7D32;
+        }
+
+        .status-warning {
+            background: #FFE082;
+            color: #F57F17;
+        }
+
+        .status-critical {
+            background: #FFCDD2;
+            color: #C62828;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .side-panel {
+                width: 400px;
+                right: -400px;
+            }
+
+            .legend {
+                max-width: 200px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .side-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .legend {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px;
+            }
+
+            .container {
+                flex-direction: column;
+            }
+        }
+
+        /* ===== ACCESSIBILITY ===== */
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Focus styles for keyboard navigation */
+        button:focus,
+        input:focus,
+        select:focus {
+            outline: 2px solid #2196F3;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🎯 IT KPI Dashboard - Interactive Radial View</h1>
+        <div class="header-info">
+            <div class="last-updated">
+                <span>📅 Ultimo aggiornamento:</span>
+                <strong id="last-update-date">13 Novembre 2025, 14:30</strong>
+            </div>
+            <div class="filters">
+                <select class="filter-select" id="period-filter" aria-label="Filtro periodo">
+                    <option value="current">Mese Corrente</option>
+                    <option value="quarter">Ultimo Trimestre</option>
+                    <option value="year">Anno Corrente</option>
+                </select>
+                <select class="filter-select" id="unit-filter" aria-label="Filtro business unit">
+                    <option value="all">Tutte le Business Unit</option>
+                    <option value="it">IT Department</option>
+                    <option value="operations">Operations</option>
+                    <option value="sales">Sales</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="search-box">
+            <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="🔍 Cerca KPI..."
+                aria-label="Cerca KPI"
+            />
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="reset-btn" aria-label="Reset vista">
+                ↺ Reset Vista
+            </button>
+            <button class="btn btn-primary" id="export-btn" aria-label="Esporta dashboard">
+                💾 Esporta SVG
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Legend -->
+        <div class="legend" role="complementary" aria-label="Legenda dashboard">
+            <h3>Legenda</h3>
+
+            <div class="legend-section">
+                <h4>Categorie KPI</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4CAF50;"></div>
+                    <span>Device KPIs</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #FF9800;"></div>
+                    <span>User KPIs</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #9C27B0;"></div>
+                    <span>Security KPIs</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #F44336;"></div>
+                    <span>Performance KPIs</span>
+                </div>
+            </div>
+
+            <div class="legend-section">
+                <h4>Stato</h4>
+                <div class="legend-item">
+                    <div class="legend-status" style="background: #4CAF50;"></div>
+                    <span>Ottimo (&gt;80%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-status" style="background: #FFD700;"></div>
+                    <span>Attenzione (60-80%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-status" style="background: #F44336;"></div>
+                    <span>Critico (&lt;60%)</span>
+                </div>
+            </div>
+
+            <div class="legend-section">
+                <h4>Trend</h4>
+                <div class="legend-item">
+                    <span style="color: #4CAF50; font-weight: bold;">↑</span>
+                    <span>In crescita</span>
+                </div>
+                <div class="legend-item">
+                    <span style="color: #FF9800; font-weight: bold;">→</span>
+                    <span>Stabile</span>
+                </div>
+                <div class="legend-item">
+                    <span style="color: #F44336; font-weight: bold;">↓</span>
+                    <span>In calo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visualization -->
+        <div class="viz-container" role="main" aria-label="Visualizzazione KPI">
+            <svg id="dashboard-svg"></svg>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip" role="tooltip"></div>
+
+    <!-- Side Panel Overlay -->
+    <div class="panel-overlay" id="panel-overlay"></div>
+
+    <!-- Side Panel -->
+    <aside class="side-panel" id="side-panel" role="complementary" aria-label="Pannello dettaglio KPI">
+        <div class="panel-header">
+            <button class="panel-close" id="panel-close" aria-label="Chiudi pannello">×</button>
+            <h2 id="panel-title">KPI Details</h2>
+            <div class="kpi-value" id="panel-value">--</div>
+            <div id="panel-trend"></div>
+        </div>
+        <div class="panel-content" id="panel-content">
+            <!-- Content will be dynamically populated -->
+        </div>
+    </aside>
+
+    <script>
+        // ===== DATA STRUCTURE =====
+        // Mock data representing IT KPIs in hierarchical structure
+        const kpiData = {
+            id: "root",
+            name: "IT KPI Dashboard",
+            level: 0,
+            color: "#2196F3",
+            children: [
+                {
+                    id: "device",
+                    name: "Device KPIs",
+                    level: 1,
+                    color: "#4CAF50",
+                    children: [
+                        {
+                            id: "device-compliance",
+                            name: "Device Compliance",
+                            level: 2,
+                            value: 87,
+                            target: 90,
+                            trend: "up",
+                            unit: "%",
+                            description: "Percentuale di dispositivi conformi alle policy aziendali",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 82 },
+                                    { month: "Ago", value: 84 },
+                                    { month: "Set", value: 85 },
+                                    { month: "Ott", value: 86 },
+                                    { month: "Nov", value: 87 }
+                                ],
+                                breakdown: [
+                                    { category: "Windows 11", value: 92, count: 450 },
+                                    { category: "Windows 10", value: 85, count: 320 },
+                                    { category: "macOS", value: 88, count: 180 },
+                                    { category: "Linux", value: 75, count: 50 }
+                                ],
+                                actions: [
+                                    "Aggiornare 50 dispositivi Windows 10 a Windows 11",
+                                    "Verificare configurazioni Linux non conformi",
+                                    "Pianificare audit trimestrale compliance"
+                                ]
+                            }
+                        },
+                        {
+                            id: "os-update",
+                            name: "OS Update Rate",
+                            level: 2,
+                            value: 92,
+                            target: 95,
+                            trend: "up",
+                            unit: "%",
+                            description: "Percentuale di sistemi operativi aggiornati all'ultima versione",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 88 },
+                                    { month: "Ago", value: 89 },
+                                    { month: "Set", value: 90 },
+                                    { month: "Ott", value: 91 },
+                                    { month: "Nov", value: 92 }
+                                ],
+                                breakdown: [
+                                    { category: "Critical Updates", value: 98, count: 980 },
+                                    { category: "Security Patches", value: 95, count: 950 },
+                                    { category: "Feature Updates", value: 85, count: 850 }
+                                ],
+                                actions: [
+                                    "Accelerare deployment feature updates",
+                                    "Monitorare dispositivi offline",
+                                    "Comunicare importanza aggiornamenti a utenti"
+                                ]
+                            }
+                        },
+                        {
+                            id: "license-util",
+                            name: "License Utilization",
+                            level: 2,
+                            value: 78,
+                            target: 85,
+                            trend: "stable",
+                            unit: "%",
+                            description: "Utilizzo effettivo delle licenze software acquistate",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 77 },
+                                    { month: "Ago", value: 78 },
+                                    { month: "Set", value: 78 },
+                                    { month: "Ott", value: 77 },
+                                    { month: "Nov", value: 78 }
+                                ],
+                                breakdown: [
+                                    { category: "Microsoft 365", value: 95, count: 950 },
+                                    { category: "Adobe Creative", value: 65, count: 130 },
+                                    { category: "Development Tools", value: 72, count: 144 },
+                                    { category: "Specialistiche", value: 60, count: 60 }
+                                ],
+                                actions: [
+                                    "Riallocare 70 licenze Adobe non utilizzate",
+                                    "Valutare necessità licenze specialistiche",
+                                    "Implementare sistema di tracking utilizzo"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: "user",
+                    name: "User KPIs",
+                    level: 1,
+                    color: "#FF9800",
+                    children: [
+                        {
+                            id: "onboarding",
+                            name: "New Hire Onboarding",
+                            level: 2,
+                            value: 94,
+                            target: 95,
+                            trend: "up",
+                            unit: "%",
+                            description: "Percentuale di nuovi assunti con setup completo entro Day 1",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 90 },
+                                    { month: "Ago", value: 91 },
+                                    { month: "Set", value: 92 },
+                                    { month: "Ott", value: 93 },
+                                    { month: "Nov", value: 94 }
+                                ],
+                                breakdown: [
+                                    { category: "Hardware Setup", value: 98, count: 49 },
+                                    { category: "Account Provisioning", value: 96, count: 48 },
+                                    { category: "Software Installation", value: 92, count: 46 },
+                                    { category: "Training Completion", value: 88, count: 44 }
+                                ],
+                                actions: [
+                                    "Automatizzare ulteriormente software installation",
+                                    "Creare checklist interattiva per nuovi assunti",
+                                    "Ridurre tempo medio setup da 6 a 4 ore"
+                                ]
+                            }
+                        },
+                        {
+                            id: "user-satisfaction",
+                            name: "User Satisfaction",
+                            level: 2,
+                            value: 4.2,
+                            target: 4.5,
+                            trend: "stable",
+                            unit: "/5",
+                            description: "Rating medio soddisfazione utenti per servizi IT",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 4.1 },
+                                    { month: "Ago", value: 4.1 },
+                                    { month: "Set", value: 4.2 },
+                                    { month: "Ott", value: 4.2 },
+                                    { month: "Nov", value: 4.2 }
+                                ],
+                                breakdown: [
+                                    { category: "Response Time", value: 4.5, count: 450 },
+                                    { category: "Problem Resolution", value: 4.3, count: 430 },
+                                    { category: "Communication", value: 4.0, count: 400 },
+                                    { category: "Proactivity", value: 3.9, count: 390 }
+                                ],
+                                actions: [
+                                    "Migliorare comunicazione proattiva su maintenance",
+                                    "Ridurre tempo medio risoluzione ticket",
+                                    "Implementare self-service portal avanzato"
+                                ]
+                            }
+                        },
+                        {
+                            id: "geo-distribution",
+                            name: "Geographic Distribution",
+                            level: 2,
+                            value: 100,
+                            target: 100,
+                            trend: "stable",
+                            unit: "%",
+                            description: "Copertura geografica supporto IT",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 100 },
+                                    { month: "Ago", value: 100 },
+                                    { month: "Set", value: 100 },
+                                    { month: "Ott", value: 100 },
+                                    { month: "Nov", value: 100 }
+                                ],
+                                breakdown: [
+                                    { category: "Milano HQ", value: 100, count: 450 },
+                                    { category: "Roma Office", value: 100, count: 200 },
+                                    { category: "Remote Workers", value: 100, count: 300 },
+                                    { category: "International", value: 100, count: 50 }
+                                ],
+                                actions: [
+                                    "Mantenere eccellenza supporto multi-sede",
+                                    "Espandere team remote support",
+                                    "Valutare apertura nuovo hub sud Italia"
+                                ]
+                            }
+                        },
+                        {
+                            id: "dept-distribution",
+                            name: "Department Distribution",
+                            level: 2,
+                            value: 95,
+                            target: 100,
+                            trend: "up",
+                            unit: "%",
+                            description: "Copertura dipartimenti con servizi IT dedicati",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 92 },
+                                    { month: "Ago", value: 93 },
+                                    { month: "Set", value: 94 },
+                                    { month: "Ott", value: 94 },
+                                    { month: "Nov", value: 95 }
+                                ],
+                                breakdown: [
+                                    { category: "Sales", value: 100, count: 250 },
+                                    { category: "Operations", value: 100, count: 300 },
+                                    { category: "Marketing", value: 95, count: 150 },
+                                    { category: "Finance", value: 85, count: 100 }
+                                ],
+                                actions: [
+                                    "Completare integrazione Finance con ERP",
+                                    "Assegnare IT liaison a Marketing",
+                                    "Standardizzare tools cross-department"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: "security",
+                    name: "Security KPIs",
+                    level: 1,
+                    color: "#9C27B0",
+                    children: [
+                        {
+                            id: "security-coverage",
+                            name: "Security Coverage",
+                            level: 2,
+                            value: 96,
+                            target: 98,
+                            trend: "up",
+                            unit: "%",
+                            description: "Percentuale dispositivi con protezione endpoint attiva",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 93 },
+                                    { month: "Ago", value: 94 },
+                                    { month: "Set", value: 95 },
+                                    { month: "Ott", value: 95 },
+                                    { month: "Nov", value: 96 }
+                                ],
+                                breakdown: [
+                                    { category: "Antivirus Active", value: 99, count: 990 },
+                                    { category: "Firewall Enabled", value: 98, count: 980 },
+                                    { category: "EDR Deployed", value: 95, count: 950 },
+                                    { category: "Encryption On", value: 92, count: 920 }
+                                ],
+                                actions: [
+                                    "Completare deployment EDR su 50 dispositivi rimanenti",
+                                    "Abilitare encryption su 80 laptop",
+                                    "Audit trimestrale configurazioni security"
+                                ]
+                            }
+                        },
+                        {
+                            id: "incident-response",
+                            name: "Incident Response",
+                            level: 2,
+                            value: 88,
+                            target: 90,
+                            trend: "stable",
+                            unit: "%",
+                            description: "Percentuale incident risolti entro SLA",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 87 },
+                                    { month: "Ago", value: 88 },
+                                    { month: "Set", value: 88 },
+                                    { month: "Ott", value: 89 },
+                                    { month: "Nov", value: 88 }
+                                ],
+                                breakdown: [
+                                    { category: "P1 - Critical", value: 95, count: 19 },
+                                    { category: "P2 - High", value: 90, count: 45 },
+                                    { category: "P3 - Medium", value: 85, count: 102 },
+                                    { category: "P4 - Low", value: 80, count: 160 }
+                                ],
+                                actions: [
+                                    "Ottimizzare processo escalation P3",
+                                    "Formare team su nuovi playbook security",
+                                    "Implementare automation per incident comuni"
+                                ]
+                            }
+                        },
+                        {
+                            id: "access-control",
+                            name: "Access Control",
+                            level: 2,
+                            value: 91,
+                            target: 95,
+                            trend: "up",
+                            unit: "%",
+                            description: "Percentuale accessi con MFA abilitata",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 85 },
+                                    { month: "Ago", value: 87 },
+                                    { month: "Set", value: 89 },
+                                    { month: "Ott", value: 90 },
+                                    { month: "Nov", value: 91 }
+                                ],
+                                breakdown: [
+                                    { category: "Email/Office 365", value: 98, count: 980 },
+                                    { category: "VPN Access", value: 95, count: 475 },
+                                    { category: "Internal Apps", value: 88, count: 880 },
+                                    { category: "Admin Accounts", value: 100, count: 50 }
+                                ],
+                                actions: [
+                                    "Rendere MFA obbligatorio per tutte le app interne",
+                                    "Campagna awareness MFA per utenti",
+                                    "Implementare passwordless authentication"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    id: "performance",
+                    name: "Performance KPIs",
+                    level: 1,
+                    color: "#F44336",
+                    children: [
+                        {
+                            id: "system-availability",
+                            name: "System Availability",
+                            level: 2,
+                            value: 99.7,
+                            target: 99.9,
+                            trend: "stable",
+                            unit: "%",
+                            description: "Uptime medio sistemi IT critici",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 99.6 },
+                                    { month: "Ago", value: 99.7 },
+                                    { month: "Set", value: 99.8 },
+                                    { month: "Ott", value: 99.6 },
+                                    { month: "Nov", value: 99.7 }
+                                ],
+                                breakdown: [
+                                    { category: "Email Services", value: 99.9, count: 1 },
+                                    { category: "File Servers", value: 99.8, count: 2 },
+                                    { category: "ERP System", value: 99.5, count: 5 },
+                                    { category: "VPN Gateway", value: 99.6, count: 4 }
+                                ],
+                                actions: [
+                                    "Investigare downtime ERP di ottobre (0.5%)",
+                                    "Implementare ridondanza VPN gateway",
+                                    "Schedulare maintenance window programmati"
+                                ]
+                            }
+                        },
+                        {
+                            id: "response-time",
+                            name: "Response Time",
+                            level: 2,
+                            value: 15,
+                            target: 10,
+                            trend: "down",
+                            unit: "min",
+                            description: "Tempo medio risposta primo livello help desk",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 18 },
+                                    { month: "Ago", value: 17 },
+                                    { month: "Set", value: 16 },
+                                    { month: "Ott", value: 16 },
+                                    { month: "Nov", value: 15 }
+                                ],
+                                breakdown: [
+                                    { category: "Phone Support", value: 5, count: 250 },
+                                    { category: "Chat Support", value: 8, count: 400 },
+                                    { category: "Email Support", value: 25, count: 200 },
+                                    { category: "Ticket System", value: 30, count: 150 }
+                                ],
+                                actions: [
+                                    "Potenziare team chat support nelle ore di picco",
+                                    "Ridurre backlog ticket email",
+                                    "Implementare chatbot per FAQ comuni"
+                                ]
+                            }
+                        },
+                        {
+                            id: "backup-success",
+                            name: "Backup Success Rate",
+                            level: 2,
+                            value: 98,
+                            target: 99,
+                            trend: "up",
+                            unit: "%",
+                            description: "Percentuale backup completati con successo",
+                            details: {
+                                historical: [
+                                    { month: "Lug", value: 96 },
+                                    { month: "Ago", value: 97 },
+                                    { month: "Set", value: 97 },
+                                    { month: "Ott", value: 98 },
+                                    { month: "Nov", value: 98 }
+                                ],
+                                breakdown: [
+                                    { category: "Database Backups", value: 99, count: 297 },
+                                    { category: "File Server Backups", value: 98, count: 294 },
+                                    { category: "User Workstations", value: 97, count: 970 },
+                                    { category: "Cloud Services", value: 99, count: 99 }
+                                ],
+                                actions: [
+                                    "Investigare 2% fallimenti workstation backup",
+                                    "Testare restore procedure trimestralmente",
+                                    "Migrare backup legacy a cloud"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        // ===== GLOBAL VARIABLES =====
+        let svg, g, simulation, nodes, links;
+        let width, height;
+        let allNodes = [];
+        let currentExpandedNodes = new Set();
+
+        // ===== HELPER FUNCTIONS =====
+
+        // Get status color based on value and threshold
+        function getStatusColor(node) {
+            if (!node.value) return node.color;
+
+            const percentage = node.unit === "%" ? node.value : (node.value / node.target) * 100;
+
+            if (node.unit === "min") {
+                // For response time, lower is better
+                if (node.value <= node.target) return "#4CAF50";
+                if (node.value <= node.target * 1.5) return "#FFD700";
+                return "#F44336";
+            }
+
+            if (percentage >= 80) return "#4CAF50";
+            if (percentage >= 60) return "#FFD700";
+            return "#F44336";
+        }
+
+        // Get trend arrow
+        function getTrendArrow(trend) {
+            if (trend === "up") return "↑";
+            if (trend === "down") return "↓";
+            return "→";
+        }
+
+        // Get trend color
+        function getTrendColor(trend) {
+            if (trend === "up") return "#4CAF50";
+            if (trend === "down") return "#F44336";
+            return "#FF9800";
+        }
+
+        // Flatten hierarchical data
+        function flattenData(node, parent = null) {
+            const result = [];
+            const nodeData = {
+                ...node,
+                parent: parent,
+                expanded: false,
+                visible: parent === null || parent.level === 0
+            };
+            result.push(nodeData);
+
+            if (node.children) {
+                node.children.forEach(child => {
+                    result.push(...flattenData(child, nodeData));
+                });
+            }
+
+            return result;
+        }
+
+        // Get node radius based on level
+        function getNodeRadius(node) {
+            if (node.level === 0) return 50;
+            if (node.level === 1) return 40;
+            return 30;
+        }
+
+        // Get links from nodes
+        function getLinks(nodes) {
+            const links = [];
+            nodes.forEach(node => {
+                if (node.parent && node.visible && node.parent.visible) {
+                    links.push({
+                        source: node.parent,
+                        target: node
+                    });
+                }
+            });
+            return links;
+        }
+
+        // ===== INITIALIZATION =====
+        function initDashboard() {
+            // Get container dimensions
+            const container = d3.select("#dashboard-svg").node().getBoundingClientRect();
+            width = container.width;
+            height = container.height;
+
+            // Create SVG
+            svg = d3.select("#dashboard-svg");
+            svg.selectAll("*").remove();
+
+            // Add zoom behavior
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 3])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
+                });
+
+            svg.call(zoom);
+
+            // Create main group
+            g = svg.append("g");
+
+            // Flatten data
+            allNodes = flattenData(kpiData);
+
+            // Create force simulation
+            simulation = d3.forceSimulation(allNodes)
+                .force("link", d3.forceLink().id(d => d.id).distance(150).strength(0.5))
+                .force("charge", d3.forceManyBody().strength(-300))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(d => getNodeRadius(d) + 20));
+
+            // Initial render
+            updateVisualization();
+
+            // Event listeners
+            document.getElementById("search-input").addEventListener("input", handleSearch);
+            document.getElementById("reset-btn").addEventListener("click", resetVisualization);
+            document.getElementById("export-btn").addEventListener("click", exportSVG);
+            document.getElementById("panel-close").addEventListener("click", closePanel);
+            document.getElementById("panel-overlay").addEventListener("click", closePanel);
+            document.getElementById("period-filter").addEventListener("change", handleFilterChange);
+            document.getElementById("unit-filter").addEventListener("change", handleFilterChange);
+
+            // Keyboard navigation
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape") closePanel();
+            });
+        }
+
+        // ===== VISUALIZATION UPDATE =====
+        function updateVisualization() {
+            const visibleNodes = allNodes.filter(d => d.visible);
+            const visibleLinks = getLinks(allNodes);
+
+            // Update links
+            const linkElements = g.selectAll(".link")
+                .data(visibleLinks, d => `${d.source.id}-${d.target.id}`);
+
+            linkElements.exit().remove();
+
+            linkElements.enter()
+                .append("path")
+                .attr("class", "link")
+                .merge(linkElements);
+
+            // Update nodes
+            const nodeElements = g.selectAll(".node")
+                .data(visibleNodes, d => d.id);
+
+            nodeElements.exit().remove();
+
+            const nodeEnter = nodeElements.enter()
+                .append("g")
+                .attr("class", d => `node ${d.level === 0 ? 'root' : d.level === 1 ? 'category' : 'metric'}`)
+                .call(d3.drag()
+                    .on("start", dragStarted)
+                    .on("drag", dragged)
+                    .on("end", dragEnded));
+
+            // Add circles
+            nodeEnter.append("circle")
+                .attr("r", d => getNodeRadius(d))
+                .attr("fill", d => d.level === 0 || d.level === 1 ? d.color : getStatusColor(d))
+                .on("click", handleNodeClick)
+                .on("dblclick", handleNodeDoubleClick)
+                .on("mouseenter", showTooltip)
+                .on("mouseleave", hideTooltip);
+
+            // Add text labels
+            nodeEnter.append("text")
+                .attr("dy", d => d.value ? -5 : 5)
+                .text(d => {
+                    if (d.level === 0) return d.name.split(" ")[0];
+                    if (d.level === 1) return d.name.replace(" KPIs", "");
+                    return d.name.split(" ").slice(0, 2).join(" ");
+                });
+
+            // Add value text for metrics
+            nodeEnter.filter(d => d.value)
+                .append("text")
+                .attr("dy", 15)
+                .attr("class", "value-text")
+                .style("font-weight", "bold")
+                .style("font-size", "11px")
+                .text(d => `${d.value}${d.unit}`);
+
+            // Update simulation
+            simulation.nodes(visibleNodes);
+            simulation.force("link").links(visibleLinks);
+            simulation.alpha(1).restart();
+
+            // Tick function
+            simulation.on("tick", () => {
+                g.selectAll(".link")
+                    .attr("d", d => {
+                        const dx = d.target.x - d.source.x;
+                        const dy = d.target.y - d.source.y;
+                        const dr = Math.sqrt(dx * dx + dy * dy);
+                        return `M${d.source.x},${d.source.y}A${dr},${dr} 0 0,1 ${d.target.x},${d.target.y}`;
+                    });
+
+                g.selectAll(".node")
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+        }
+
+        // ===== EVENT HANDLERS =====
+
+        function handleNodeClick(event, d) {
+            event.stopPropagation();
+
+            if (d.children) {
+                // Toggle expansion
+                d.expanded = !d.expanded;
+
+                // Update children visibility
+                d.children.forEach(child => {
+                    child.visible = d.expanded;
+                    if (!d.expanded) {
+                        child.expanded = false;
+                        if (child.children) {
+                            child.children.forEach(gc => gc.visible = false);
+                        }
+                    }
+                });
+
+                updateVisualization();
+            }
+        }
+
+        function handleNodeDoubleClick(event, d) {
+            event.stopPropagation();
+
+            if (d.level >= 2 && d.details) {
+                openDetailPanel(d);
+            }
+        }
+
+        function showTooltip(event, d) {
+            const tooltip = d3.select("#tooltip");
+
+            let html = `<div class="tooltip-title">${d.name}</div>`;
+
+            if (d.description) {
+                html += `<div style="margin: 8px 0; font-size: 11px; color: #ddd;">${d.description}</div>`;
+            }
+
+            if (d.value !== undefined) {
+                html += `<div class="tooltip-row">
+                    <span class="tooltip-label">Valore:</span>
+                    <span class="tooltip-value">${d.value}${d.unit}</span>
+                </div>`;
+                html += `<div class="tooltip-row">
+                    <span class="tooltip-label">Target:</span>
+                    <span class="tooltip-value">${d.target}${d.unit}</span>
+                </div>`;
+                html += `<div class="tooltip-row">
+                    <span class="tooltip-label">Trend:</span>
+                    <span class="tooltip-value ${d.trend === 'up' ? 'trend-up' : d.trend === 'down' ? 'trend-down' : 'trend-stable'}">
+                        ${getTrendArrow(d.trend)} ${d.trend === 'up' ? 'In crescita' : d.trend === 'down' ? 'In calo' : 'Stabile'}
+                    </span>
+                </div>`;
+            }
+
+            if (d.children) {
+                html += `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 11px; color: #aaa;">
+                    Click per ${d.expanded ? 'collassare' : 'espandere'} • Doppio click per dettagli
+                </div>`;
+            }
+
+            tooltip.html(html)
+                .classed("visible", true)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY - 15) + "px");
+        }
+
+        function hideTooltip() {
+            d3.select("#tooltip").classed("visible", false);
+        }
+
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function handleSearch(event) {
+            const searchTerm = event.target.value.toLowerCase().trim();
+
+            if (searchTerm === "") {
+                // Reset all nodes
+                g.selectAll(".node").classed("highlighted dimmed", false);
+                return;
+            }
+
+            // Find matching nodes
+            const matches = allNodes.filter(d =>
+                d.visible && d.name.toLowerCase().includes(searchTerm)
+            );
+
+            // Highlight matches
+            g.selectAll(".node").each(function(d) {
+                const node = d3.select(this);
+                if (matches.includes(d)) {
+                    node.classed("highlighted", true).classed("dimmed", false);
+                } else {
+                    node.classed("highlighted", false).classed("dimmed", true);
+                }
+            });
+        }
+
+        function resetVisualization() {
+            // Reset all expansions
+            allNodes.forEach(node => {
+                node.expanded = false;
+                node.visible = node.level === 0 || node.level === 1;
+            });
+
+            // Clear search
+            document.getElementById("search-input").value = "";
+            g.selectAll(".node").classed("highlighted dimmed", false);
+
+            // Update
+            updateVisualization();
+        }
+
+        function handleFilterChange() {
+            // In a real application, this would filter data
+            // For now, just show a message
+            console.log("Filters changed:", {
+                period: document.getElementById("period-filter").value,
+                unit: document.getElementById("unit-filter").value
+            });
+        }
+
+        // ===== DETAIL PANEL =====
+
+        function openDetailPanel(node) {
+            const panel = document.getElementById("side-panel");
+            const overlay = document.getElementById("panel-overlay");
+
+            // Update header
+            document.getElementById("panel-title").textContent = node.name;
+            document.getElementById("panel-value").textContent = `${node.value}${node.unit}`;
+
+            const trendHtml = `<span style="color: ${getTrendColor(node.trend)}; font-size: 18px;">
+                ${getTrendArrow(node.trend)} ${node.trend === 'up' ? 'In crescita' : node.trend === 'down' ? 'In calo' : 'Stabile'}
+            </span>`;
+            document.getElementById("panel-trend").innerHTML = trendHtml;
+
+            // Build content
+            let content = `
+                <div class="panel-section">
+                    <h3>📊 Trend Storico</h3>
+                    <div class="trend-chart">
+                        <svg id="trend-chart-svg" width="100%" height="200"></svg>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>📈 Breakdown Dettagliato</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Valore</th>
+                                <th>Conteggio</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${node.details.breakdown.map(item => {
+                                const status = item.value >= 80 ? 'good' : item.value >= 60 ? 'warning' : 'critical';
+                                const statusText = item.value >= 80 ? 'Ottimo' : item.value >= 60 ? 'Attenzione' : 'Critico';
+                                return `<tr>
+                                    <td>${item.category}</td>
+                                    <td><strong>${item.value}${node.unit}</strong></td>
+                                    <td>${item.count}</td>
+                                    <td><span class="status-badge status-${status}">${statusText}</span></td>
+                                </tr>`;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel-section">
+                    <div class="action-suggestions">
+                        <h4>💡 Azioni Suggerite</h4>
+                        <ul>
+                            ${node.details.actions.map(action => `<li>${action}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("panel-content").innerHTML = content;
+
+            // Draw trend chart
+            drawTrendChart(node.details.historical, node.unit);
+
+            // Show panel
+            panel.classList.add("open");
+            overlay.classList.add("visible");
+        }
+
+        function closePanel() {
+            document.getElementById("side-panel").classList.remove("open");
+            document.getElementById("panel-overlay").classList.remove("visible");
+        }
+
+        function drawTrendChart(data, unit) {
+            const margin = { top: 20, right: 30, bottom: 30, left: 50 };
+            const width = 450 - margin.left - margin.right;
+            const height = 200 - margin.top - margin.bottom;
+
+            const svg = d3.select("#trend-chart-svg");
+            svg.selectAll("*").remove();
+
+            const g = svg.append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Scales
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.month))
+                .range([0, width])
+                .padding(0.1);
+
+            const y = d3.scaleLinear()
+                .domain([0, d3.max(data, d => d.value) * 1.1])
+                .range([height, 0]);
+
+            // Line generator
+            const line = d3.line()
+                .x(d => x(d.month) + x.bandwidth() / 2)
+                .y(d => y(d.value))
+                .curve(d3.curveMonotoneX);
+
+            // Add line
+            g.append("path")
+                .datum(data)
+                .attr("fill", "none")
+                .attr("stroke", "#2196F3")
+                .attr("stroke-width", 3)
+                .attr("d", line);
+
+            // Add dots
+            g.selectAll(".dot")
+                .data(data)
+                .enter().append("circle")
+                .attr("class", "dot")
+                .attr("cx", d => x(d.month) + x.bandwidth() / 2)
+                .attr("cy", d => y(d.value))
+                .attr("r", 5)
+                .attr("fill", "#2196F3")
+                .attr("stroke", "white")
+                .attr("stroke-width", 2);
+
+            // Add value labels
+            g.selectAll(".label")
+                .data(data)
+                .enter().append("text")
+                .attr("class", "label")
+                .attr("x", d => x(d.month) + x.bandwidth() / 2)
+                .attr("y", d => y(d.value) - 10)
+                .attr("text-anchor", "middle")
+                .attr("font-size", "11px")
+                .attr("font-weight", "600")
+                .attr("fill", "#333")
+                .text(d => `${d.value}${unit}`);
+
+            // Add axes
+            g.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .style("font-size", "11px");
+
+            g.append("g")
+                .call(d3.axisLeft(y).ticks(5))
+                .style("font-size", "11px");
+        }
+
+        // ===== EXPORT =====
+
+        function exportSVG() {
+            const svgElement = document.getElementById("dashboard-svg");
+            const serializer = new XMLSerializer();
+            const svgString = serializer.serializeToString(svgElement);
+
+            const blob = new Blob([svgString], { type: "image/svg+xml" });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `IT-KPI-Dashboard-${new Date().toISOString().split('T')[0]}.svg`;
+            link.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== INITIALIZE ON LOAD =====
+        window.addEventListener("DOMContentLoaded", initDashboard);
+        window.addEventListener("resize", () => {
+            // Debounce resize
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(() => {
+                initDashboard();
+            }, 250);
+        });
+    </script>
+</body>
+</html>
